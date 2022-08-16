@@ -1,12 +1,12 @@
-# Causal Inference: What If - Tidyverse Examples
+# R Code for Causal Inference: What If
 
-This repository contains the source for [Tidyverse examples]() for
+This repository contains the source for [R Code for Causal Inference: What If](behrman.github.io/ci-wi).
+
+A PDF of the original book is available at its website
 
 Hernán MA, Robins JM. [Causal Inference: What If](https://www.hsph.harvard.edu/miguel-hernan/causal-inference-book/). 2020.
 
-The linked site has a PDF of the book.
-
-We welcome suggestions for improvements for these examples.
+We welcome suggestions for improvements to the code.
 
 * Small matters, such as typos, can be submitted through pull requests.
 * Larger matters can be submitted through issues.
