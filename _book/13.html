@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>13 Standardization and the parametric g-formula | R Code for Causal Inference: What If</title>
+  <meta name="description" content="13 Standardization and the parametric g-formula | R Code for Causal Inference: What If." />
+  <meta name="generator" content="bookdown 0.28 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="13 Standardization and the parametric g-formula | R Code for Causal Inference: What If" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:description" content="13 Standardization and the parametric g-formula | R Code for Causal Inference: What If." />
+  <meta name="github-repo" content="behrman/ci-wi" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="13 Standardization and the parametric g-formula | R Code for Causal Inference: What If" />
+  
+  <meta name="twitter:description" content="13 Standardization and the parametric g-formula | R Code for Causal Inference: What If." />
+  
+
+<meta name="author" content="Bill Behrman" />
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="12.html"/>
+<link rel="next" href="14.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+<script src="libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+/* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><strong><a href="./">R Code for Causal Inference: What If</a></strong></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Welcome</a>
+<ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#how-to-install-required-r-packages"><i class="fa fa-check"></i>How to install required R packages</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#how-to-download-dataset"><i class="fa fa-check"></i>How to download dataset</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#source-for-this-book"><i class="fa fa-check"></i>Source for this book</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="11.html"><a href="11.html"><i class="fa fa-check"></i>11 Why Model?</a>
+<ul>
+<li class="chapter" data-level="" data-path="11.html"><a href="11.html#data-cannot-speak-for-themselves"><i class="fa fa-check"></i>11.1 Data cannot speak for themselves</a></li>
+<li class="chapter" data-level="" data-path="11.html"><a href="11.html#parametric-estimators-of-the-conditional-mean"><i class="fa fa-check"></i>11.2 Parametric estimators of the conditional mean</a></li>
+<li class="chapter" data-level="" data-path="11.html"><a href="11.html#nonparametric-estimators-of-the-conditional-mean"><i class="fa fa-check"></i>11.3 Nonparametric estimators of the conditional mean</a></li>
+<li class="chapter" data-level="" data-path="11.html"><a href="11.html#smoothing"><i class="fa fa-check"></i>11.4 Smoothing</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html"><i class="fa fa-check"></i>12 IP weighting and marginal structural models</a>
+<ul>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html#the-causal-question"><i class="fa fa-check"></i>12.1 The causal question</a></li>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html#estimating-ip-weights-via-modeling"><i class="fa fa-check"></i>12.2 Estimating IP weights via modeling</a></li>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html#stabilized-ip-weights"><i class="fa fa-check"></i>12.3 Stabilized IP weights</a>
+<ul>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html#fine-point-12.2-checking-positivity"><i class="fa fa-check"></i>Fine Point 12.2 Checking positivity</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html#marginal-structural-models"><i class="fa fa-check"></i>12.4 Marginal structural models</a></li>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html#effect-modification-and-marginal-structural-models"><i class="fa fa-check"></i>12.5 Effect modification and marginal structural models</a></li>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html#censoring-and-missing-data"><i class="fa fa-check"></i>12.6 Censoring and missing data</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="13.html"><a href="13.html"><i class="fa fa-check"></i>13 Standardization and the parametric g-formula</a>
+<ul>
+<li class="chapter" data-level="" data-path="13.html"><a href="13.html#standardization-as-an-alternative-to-ip-weighting"><i class="fa fa-check"></i>13.1 Standardization as an alternative to IP weighting</a></li>
+<li class="chapter" data-level="" data-path="13.html"><a href="13.html#estimating-the-mean-outcome-via-modeling"><i class="fa fa-check"></i>13.2 Estimating the mean outcome via modeling</a></li>
+<li class="chapter" data-level="" data-path="13.html"><a href="13.html#standardizing-the-mean-outcome-to-the-confounder-distribution"><i class="fa fa-check"></i>13.3 Standardizing the mean outcome to the confounder distribution</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="14.html"><a href="14.html"><i class="fa fa-check"></i>14 G-estimation and structural nested models</a>
+<ul>
+<li class="chapter" data-level="" data-path="14.html"><a href="14.html#the-causal-question-revisited"><i class="fa fa-check"></i>14.1 The causal question revisited</a></li>
+<li class="chapter" data-level="" data-path="14.html"><a href="14.html#rank-preservation"><i class="fa fa-check"></i>14.4 Rank preservation</a></li>
+<li class="chapter" data-level="" data-path="14.html"><a href="14.html#g-estimation"><i class="fa fa-check"></i>14.5 G-estimation</a></li>
+<li class="chapter" data-level="" data-path="14.html"><a href="14.html#structural-nested-models-with-two-or-more-parameters"><i class="fa fa-check"></i>14.6 Structural nested models with two or more parameters</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="15.html"><a href="15.html"><i class="fa fa-check"></i>15 Outcome regression and propensity scores</a>
+<ul>
+<li class="chapter" data-level="" data-path="15.html"><a href="15.html#outcome-regression"><i class="fa fa-check"></i>15.1 Outcome regression</a></li>
+<li class="chapter" data-level="" data-path="15.html"><a href="15.html#propensity-scores"><i class="fa fa-check"></i>15.2 Propensity scores</a></li>
+<li class="chapter" data-level="" data-path="15.html"><a href="15.html#propensity-stratification-and-standardization"><i class="fa fa-check"></i>15.3 Propensity stratification and standardization</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="16.html"><a href="16.html"><i class="fa fa-check"></i>16 Instrumental variable estimation</a>
+<ul>
+<li class="chapter" data-level="" data-path="16.html"><a href="16.html#the-three-instrumental-conditions"><i class="fa fa-check"></i>16.1 The three instrumental conditions</a></li>
+<li class="chapter" data-level="" data-path="16.html"><a href="16.html#the-usual-iv-estimand"><i class="fa fa-check"></i>16.2 The usual IV estimand</a></li>
+<li class="chapter" data-level="" data-path="16.html"><a href="16.html#the-three-instrumental-conditions-revisited"><i class="fa fa-check"></i>16.5 The three instrumental conditions revisited</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="17.html"><a href="17.html"><i class="fa fa-check"></i>17 Causal survival analysis</a>
+<ul>
+<li class="chapter" data-level="" data-path="17.html"><a href="17.html#hazards-and-risks"><i class="fa fa-check"></i>17.1 Hazards and risks</a></li>
+<li class="chapter" data-level="" data-path="17.html"><a href="17.html#from-hazards-to-risks"><i class="fa fa-check"></i>17.2 From hazards to risks</a></li>
+<li class="chapter" data-level="" data-path="17.html"><a href="17.html#ip-weighting-of-marginal-structural-models"><i class="fa fa-check"></i>17.4 IP weighting of marginal structural models</a></li>
+<li class="chapter" data-level="" data-path="17.html"><a href="17.html#the-parametric-g-formula"><i class="fa fa-check"></i>17.5 The parametric g-formula</a></li>
+<li class="chapter" data-level="" data-path="17.html"><a href="17.html#g-estimation-of-structural-nested-models"><i class="fa fa-check"></i>17.6 G-estimation of structural nested models</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="results.html"><a href="results.html"><i class="fa fa-check"></i>Results</a>
+<ul>
+<li class="chapter" data-level="" data-path="results.html"><a href="results.html#average-treatment-effect"><i class="fa fa-check"></i>Average treatment effect</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">R Code for Causal Inference: What If</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="standardization-and-the-parametric-g-formula" class="section level1 unnumbered hasAnchor">
+<h1>13 Standardization and the parametric g-formula<a href="13.html#standardization-and-the-parametric-g-formula" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div class="sourceCode" id="cb80"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb80-1"><a href="13.html#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Packages</span></span>
+<span id="cb80-2"><a href="13.html#cb80-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb80-3"><a href="13.html#cb80-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb80-4"><a href="13.html#cb80-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Parameters</span></span>
+<span id="cb80-5"><a href="13.html#cb80-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># NHEFS data</span></span>
+<span id="cb80-6"><a href="13.html#cb80-6" aria-hidden="true" tabindex="-1"></a>file_nhefs <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;data/nhefs.rds&quot;</span>)</span>
+<span id="cb80-7"><a href="13.html#cb80-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb80-8"><a href="13.html#cb80-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Round and format vector</span></span>
+<span id="cb80-9"><a href="13.html#cb80-9" aria-hidden="true" tabindex="-1"></a>round_format <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">nsmall =</span> <span class="dv">2</span>, ...) {</span>
+<span id="cb80-10"><a href="13.html#cb80-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">format</span>(<span class="fu">round</span>(x, <span class="at">digits =</span> nsmall), <span class="at">nsmall =</span> nsmall, ...)</span>
+<span id="cb80-11"><a href="13.html#cb80-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb80-12"><a href="13.html#cb80-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Print tibble</span></span>
+<span id="cb80-13"><a href="13.html#cb80-13" aria-hidden="true" tabindex="-1"></a>kable <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">cols =</span> <span class="fu">where</span>(is.double), <span class="at">nsmall =</span> <span class="dv">2</span>, <span class="at">align =</span> <span class="st">&quot;r&quot;</span>, ...) {</span>
+<span id="cb80-14"><a href="13.html#cb80-14" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">%&gt;%</span></span>
+<span id="cb80-15"><a href="13.html#cb80-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="fu">across</span>({{cols}}, round_format, <span class="at">nsmall =</span> nsmall)) <span class="sc">%&gt;%</span></span>
+<span id="cb80-16"><a href="13.html#cb80-16" aria-hidden="true" tabindex="-1"></a>    knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">align =</span> align, ...) <span class="sc">%&gt;%</span> </span>
+<span id="cb80-17"><a href="13.html#cb80-17" aria-hidden="true" tabindex="-1"></a>    kableExtra<span class="sc">::</span><span class="fu">kable_styling</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>, <span class="at">position =</span> <span class="st">&quot;left&quot;</span>)</span>
+<span id="cb80-18"><a href="13.html#cb80-18" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb80-19"><a href="13.html#cb80-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Print min, mean, and max of vector</span></span>
+<span id="cb80-20"><a href="13.html#cb80-20" aria-hidden="true" tabindex="-1"></a>kable_summary <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">nsmall =</span> <span class="dv">2</span>, ...) {</span>
+<span id="cb80-21"><a href="13.html#cb80-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">min =</span> <span class="fu">min</span>(x), <span class="at">mean =</span> <span class="fu">mean</span>(x), <span class="at">max =</span> <span class="fu">max</span>(x)) <span class="sc">%&gt;%</span></span>
+<span id="cb80-22"><a href="13.html#cb80-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">kable</span>(<span class="at">nsmall =</span> nsmall, ...)</span>
+<span id="cb80-23"><a href="13.html#cb80-23" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb80-24"><a href="13.html#cb80-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb80-25"><a href="13.html#cb80-25" aria-hidden="true" tabindex="-1"></a><span class="co">#===============================================================================</span></span>
+<span id="cb80-26"><a href="13.html#cb80-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb80-27"><a href="13.html#cb80-27" aria-hidden="true" tabindex="-1"></a><span class="co"># NHEFS data</span></span>
+<span id="cb80-28"><a href="13.html#cb80-28" aria-hidden="true" tabindex="-1"></a>nhefs <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(file_nhefs)</span>
+<span id="cb80-29"><a href="13.html#cb80-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb80-30"><a href="13.html#cb80-30" aria-hidden="true" tabindex="-1"></a><span class="co"># NHEFS censored for those with weight measurements in 1982</span></span>
+<span id="cb80-31"><a href="13.html#cb80-31" aria-hidden="true" tabindex="-1"></a>nhefs_censored <span class="ot">&lt;-</span> </span>
+<span id="cb80-32"><a href="13.html#cb80-32" aria-hidden="true" tabindex="-1"></a>  nhefs <span class="sc">%&gt;%</span> </span>
+<span id="cb80-33"><a href="13.html#cb80-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>(wt82, wt82_71)</span></code></pre></div>
+<div id="standardization-as-an-alternative-to-ip-weighting" class="section level2 unnumbered hasAnchor">
+<h2>13.1 Standardization as an alternative to IP weighting<a href="13.html#standardization-as-an-alternative-to-ip-weighting" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Number of individuals in full dataset</p>
+<div class="sourceCode" id="cb81"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb81-1"><a href="13.html#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(nhefs)</span></code></pre></div>
+<pre><code>#&gt; [1] 1629</code></pre>
+<p>Number of individuals with weight measurements in 1982.</p>
+<div class="sourceCode" id="cb83"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb83-1"><a href="13.html#cb83-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(nhefs_censored)</span></code></pre></div>
+<pre><code>#&gt; [1] 1566</code></pre>
+</div>
+<div id="estimating-the-mean-outcome-via-modeling" class="section level2 unnumbered hasAnchor">
+<h2>13.2 Estimating the mean outcome via modeling<a href="13.html#estimating-the-mean-outcome-via-modeling" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>In this section, we will use the censored dataset of those with weight measurements in 1982.</p>
+<p>Count untreated and treated individuals.</p>
+<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="13.html#cb85-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> </span>
+<span id="cb85-2"><a href="13.html#cb85-2" aria-hidden="true" tabindex="-1"></a>  nhefs_censored <span class="sc">%&gt;%</span> </span>
+<span id="cb85-3"><a href="13.html#cb85-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(qsmk)</span>
+<span id="cb85-4"><a href="13.html#cb85-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb85-5"><a href="13.html#cb85-5" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(v, <span class="at">nsmall =</span> <span class="dv">0</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+qsmk
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1163
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+403
+</td>
+</tr>
+</tbody>
+</table>
+<p>There are 1163 untreated individuals and 403 treated individuals.</p>
+<p>Fit linear regression model for weight gain.</p>
+<div class="sourceCode" id="cb86"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb86-1"><a href="13.html#cb86-1" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> </span>
+<span id="cb86-2"><a href="13.html#cb86-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lm</span>(</span>
+<span id="cb86-3"><a href="13.html#cb86-3" aria-hidden="true" tabindex="-1"></a>    wt82_71 <span class="sc">~</span> qsmk <span class="sc">*</span> smokeintensity <span class="sc">+</span> sex <span class="sc">+</span> <span class="fu">poly</span>(age, <span class="dv">2</span>) <span class="sc">+</span> race <span class="sc">+</span> education <span class="sc">+</span></span>
+<span id="cb86-4"><a href="13.html#cb86-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">poly</span>(wt71, <span class="dv">2</span>) <span class="sc">+</span> <span class="fu">I</span>(smokeintensity<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fu">poly</span>(smokeyrs, <span class="dv">2</span>) <span class="sc">+</span> active <span class="sc">+</span></span>
+<span id="cb86-5"><a href="13.html#cb86-5" aria-hidden="true" tabindex="-1"></a>      exercise,</span>
+<span id="cb86-6"><a href="13.html#cb86-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> nhefs_censored</span>
+<span id="cb86-7"><a href="13.html#cb86-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb86-8"><a href="13.html#cb86-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb86-9"><a href="13.html#cb86-9" aria-hidden="true" tabindex="-1"></a>broom<span class="sc">::</span><span class="fu">tidy</span>(fit)</span></code></pre></div>
+<pre><code>#&gt; # A tibble: 21 × 5
+#&gt;    term           estimate std.error statistic       p.value
+#&gt;    &lt;chr&gt;             &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;         &lt;dbl&gt;
+#&gt;  1 (Intercept)      1.67      0.903      1.85  0.0651       
+#&gt;  2 qsmk1            2.56      0.809      3.16  0.00159      
+#&gt;  3 smokeintensity   0.0491    0.0517     0.950 0.342        
+#&gt;  4 sex1            -1.43      0.469     -3.05  0.00233      
+#&gt;  5 poly(age, 2)1  -90.6      15.7       -5.76  0.00000000994
+#&gt;  6 poly(age, 2)2  -36.2      10.2       -3.53  0.000421     
+#&gt;  7 race1            0.560     0.582      0.963 0.336        
+#&gt;  8 education2       0.790     0.607      1.30  0.193        
+#&gt;  9 education3       0.556     0.556      1.00  0.317        
+#&gt; 10 education4       1.49      0.832      1.79  0.0733       
+#&gt; # … with 11 more rows
+#&gt; # ℹ Use `print(n = ...)` to see more rows</code></pre>
+<p>Predict weight gain for individuals.</p>
+<div class="sourceCode" id="cb88"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb88-1"><a href="13.html#cb88-1" aria-hidden="true" tabindex="-1"></a>nhefs_censored_pred <span class="ot">&lt;-</span> </span>
+<span id="cb88-2"><a href="13.html#cb88-2" aria-hidden="true" tabindex="-1"></a>  nhefs_censored <span class="sc">%&gt;%</span> </span>
+<span id="cb88-3"><a href="13.html#cb88-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">wt82_71_pred =</span> <span class="fu">predict</span>(fit))</span></code></pre></div>
+<p>The individual with the unique identifier 24770.</p>
+<div class="sourceCode" id="cb89"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb89-1"><a href="13.html#cb89-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> </span>
+<span id="cb89-2"><a href="13.html#cb89-2" aria-hidden="true" tabindex="-1"></a>  nhefs_censored_pred <span class="sc">%&gt;%</span> </span>
+<span id="cb89-3"><a href="13.html#cb89-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(seqn <span class="sc">==</span> <span class="dv">24770</span>)</span></code></pre></div>
+<p>This person’s characteristics.</p>
+<div class="sourceCode" id="cb90"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb90-1"><a href="13.html#cb90-1" aria-hidden="true" tabindex="-1"></a>v <span class="sc">%&gt;%</span> </span>
+<span id="cb90-2"><a href="13.html#cb90-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(</span>
+<span id="cb90-3"><a href="13.html#cb90-3" aria-hidden="true" tabindex="-1"></a>    seqn, qsmk, sex, race, age, education, smokeintensity, smokeyrs, exercise,</span>
+<span id="cb90-4"><a href="13.html#cb90-4" aria-hidden="true" tabindex="-1"></a>    active, wt71</span>
+<span id="cb90-5"><a href="13.html#cb90-5" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb90-6"><a href="13.html#cb90-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">nsmall =</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb90-7"><a href="13.html#cb90-7" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">scroll_box</span>(<span class="at">width =</span> <span class="st">&quot;100%&quot;</span>)</span></code></pre></div>
+<div style="border: 1px solid #ddd; padding: 5px; overflow-x: scroll; width:100%; ">
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+seqn
+</th>
+<th style="text-align:right;">
+qsmk
+</th>
+<th style="text-align:right;">
+sex
+</th>
+<th style="text-align:right;">
+race
+</th>
+<th style="text-align:right;">
+age
+</th>
+<th style="text-align:right;">
+education
+</th>
+<th style="text-align:right;">
+smokeintensity
+</th>
+<th style="text-align:right;">
+smokeyrs
+</th>
+<th style="text-align:right;">
+exercise
+</th>
+<th style="text-align:right;">
+active
+</th>
+<th style="text-align:right;">
+wt71
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+24770
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+26
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+15
+</td>
+<td style="text-align:right;">
+12
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+112
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>This person was a white male who did not quit smoking. In 1971, he was age 26, a college dropout, smoked 15 cigarettes a day, had been smoking for 12 years, had moderate exercise, was very active, and weighed 112 kg.</p>
+<p>This person’s observed and predicted weight gain.</p>
+<div class="sourceCode" id="cb91"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb91-1"><a href="13.html#cb91-1" aria-hidden="true" tabindex="-1"></a>v <span class="sc">%&gt;%</span> </span>
+<span id="cb91-2"><a href="13.html#cb91-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(wt82_71, wt82_71_pred) <span class="sc">%&gt;%</span> </span>
+<span id="cb91-3"><a href="13.html#cb91-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>()</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+wt82_71
+</th>
+<th style="text-align:right;">
+wt82_71_pred
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+3.18
+</td>
+<td style="text-align:right;">
+0.34
+</td>
+</tr>
+</tbody>
+</table>
+<p>The person was observed to gain 3.18 kg between 1971 and 1982 and was predicted to gain 0.34 kg.</p>
+<p>Observed weight gain for individuals.</p>
+<div class="sourceCode" id="cb92"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb92-1"><a href="13.html#cb92-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable_summary</span>(nhefs_censored<span class="sc">$</span>wt82_71, <span class="at">nsmall =</span> <span class="dv">1</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+min
+</th>
+<th style="text-align:right;">
+mean
+</th>
+<th style="text-align:right;">
+max
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+-41.3
+</td>
+<td style="text-align:right;">
+2.6
+</td>
+<td style="text-align:right;">
+48.5
+</td>
+</tr>
+</tbody>
+</table>
+<p>Predicted weight gain for individuals.</p>
+<div class="sourceCode" id="cb93"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb93-1"><a href="13.html#cb93-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable_summary</span>(nhefs_censored_pred<span class="sc">$</span>wt82_71_pred, <span class="at">nsmall =</span> <span class="dv">1</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+min
+</th>
+<th style="text-align:right;">
+mean
+</th>
+<th style="text-align:right;">
+max
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+-10.9
+</td>
+<td style="text-align:right;">
+2.6
+</td>
+<td style="text-align:right;">
+9.9
+</td>
+</tr>
+</tbody>
+</table>
+<p>The mean observed weight gain and the mean predicted weight gain are very close.</p>
+<div class="sourceCode" id="cb94"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb94-1"><a href="13.html#cb94-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(nhefs_censored<span class="sc">$</span>wt82_71) <span class="sc">-</span> <span class="fu">mean</span>(nhefs_censored_pred<span class="sc">$</span>wt82_71_pred)</span></code></pre></div>
+<pre><code>#&gt; [1] -1.021405e-14</code></pre>
+<p>Prediction residuals.</p>
+<div class="sourceCode" id="cb96"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb96-1"><a href="13.html#cb96-1" aria-hidden="true" tabindex="-1"></a>nhefs_censored_pred <span class="sc">%&gt;%</span> </span>
+<span id="cb96-2"><a href="13.html#cb96-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(wt82_71_pred, wt82_71 <span class="sc">-</span> wt82_71_pred)) <span class="sc">+</span></span>
+<span id="cb96-3"><a href="13.html#cb96-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb96-4"><a href="13.html#cb96-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">color =</span> <span class="st">&quot;white&quot;</span>, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb96-5"><a href="13.html#cb96-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">formula =</span> y <span class="sc">~</span> x) <span class="sc">+</span></span>
+<span id="cb96-6"><a href="13.html#cb96-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb96-7"><a href="13.html#cb96-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;Prediction residuals&quot;</span>,</span>
+<span id="cb96-8"><a href="13.html#cb96-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Predicted weight gain (kg)&quot;</span>,</span>
+<span id="cb96-9"><a href="13.html#cb96-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Residual (kg)&quot;</span></span>
+<span id="cb96-10"><a href="13.html#cb96-10" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<p><img src="13_files/figure-html/unnamed-chunk-13-1.png" width="100%" /></p>
+</div>
+<div id="standardizing-the-mean-outcome-to-the-confounder-distribution" class="section level2 unnumbered hasAnchor">
+<h2>13.3 Standardizing the mean outcome to the confounder distribution<a href="13.html#standardizing-the-mean-outcome-to-the-confounder-distribution" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Data from Table 2.2.</p>
+<div class="sourceCode" id="cb97"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb97-1"><a href="13.html#cb97-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> </span>
+<span id="cb97-2"><a href="13.html#cb97-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tribble</span>(</span>
+<span id="cb97-3"><a href="13.html#cb97-3" aria-hidden="true" tabindex="-1"></a>    <span class="sc">~</span>name,       <span class="sc">~</span>L, <span class="sc">~</span>A, <span class="sc">~</span>Y,</span>
+<span id="cb97-4"><a href="13.html#cb97-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Rheia&quot;</span>,      <span class="dv">0</span>,  <span class="dv">0</span>,  <span class="dv">0</span>,</span>
+<span id="cb97-5"><a href="13.html#cb97-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Kronos&quot;</span>,     <span class="dv">0</span>,  <span class="dv">0</span>,  <span class="dv">1</span>,</span>
+<span id="cb97-6"><a href="13.html#cb97-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Demeter&quot;</span>,    <span class="dv">0</span>,  <span class="dv">0</span>,  <span class="dv">0</span>,</span>
+<span id="cb97-7"><a href="13.html#cb97-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Hades&quot;</span>,      <span class="dv">0</span>,  <span class="dv">0</span>,  <span class="dv">0</span>,</span>
+<span id="cb97-8"><a href="13.html#cb97-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Hestia&quot;</span>,     <span class="dv">0</span>,  <span class="dv">1</span>,  <span class="dv">0</span>,</span>
+<span id="cb97-9"><a href="13.html#cb97-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Poseidon&quot;</span>,   <span class="dv">0</span>,  <span class="dv">1</span>,  <span class="dv">0</span>,</span>
+<span id="cb97-10"><a href="13.html#cb97-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Hera&quot;</span>,       <span class="dv">0</span>,  <span class="dv">1</span>,  <span class="dv">0</span>,</span>
+<span id="cb97-11"><a href="13.html#cb97-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Zeus&quot;</span>,       <span class="dv">0</span>,  <span class="dv">1</span>,  <span class="dv">1</span>,</span>
+<span id="cb97-12"><a href="13.html#cb97-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Artemis&quot;</span>,    <span class="dv">1</span>,  <span class="dv">0</span>,  <span class="dv">1</span>,</span>
+<span id="cb97-13"><a href="13.html#cb97-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Apollo&quot;</span>,     <span class="dv">1</span>,  <span class="dv">0</span>,  <span class="dv">1</span>,</span>
+<span id="cb97-14"><a href="13.html#cb97-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Leto&quot;</span>,       <span class="dv">1</span>,  <span class="dv">0</span>,  <span class="dv">0</span>,</span>
+<span id="cb97-15"><a href="13.html#cb97-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Ares&quot;</span>,       <span class="dv">1</span>,  <span class="dv">1</span>,  <span class="dv">1</span>,</span>
+<span id="cb97-16"><a href="13.html#cb97-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Athena&quot;</span>,     <span class="dv">1</span>,  <span class="dv">1</span>,  <span class="dv">1</span>,</span>
+<span id="cb97-17"><a href="13.html#cb97-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Hephaestus&quot;</span>, <span class="dv">1</span>,  <span class="dv">1</span>,  <span class="dv">1</span>,</span>
+<span id="cb97-18"><a href="13.html#cb97-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Aphrodite&quot;</span>,  <span class="dv">1</span>,  <span class="dv">1</span>,  <span class="dv">1</span>,</span>
+<span id="cb97-19"><a href="13.html#cb97-19" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Cyclope&quot;</span>,    <span class="dv">1</span>,  <span class="dv">1</span>,  <span class="dv">1</span>,</span>
+<span id="cb97-20"><a href="13.html#cb97-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Persephone&quot;</span>, <span class="dv">1</span>,  <span class="dv">1</span>,  <span class="dv">1</span>,</span>
+<span id="cb97-21"><a href="13.html#cb97-21" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Hermes&quot;</span>,     <span class="dv">1</span>,  <span class="dv">1</span>,  <span class="dv">0</span>,</span>
+<span id="cb97-22"><a href="13.html#cb97-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Hebe&quot;</span>,       <span class="dv">1</span>,  <span class="dv">1</span>,  <span class="dv">0</span>,</span>
+<span id="cb97-23"><a href="13.html#cb97-23" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Dionysus&quot;</span>,   <span class="dv">1</span>,  <span class="dv">1</span>,  <span class="dv">0</span></span>
+<span id="cb97-24"><a href="13.html#cb97-24" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb97-25"><a href="13.html#cb97-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">c</span>(L, A, Y), as.factor))</span></code></pre></div>
+<p>Fit logistic regression model for outcome <code>Y</code>.</p>
+<div class="sourceCode" id="cb98"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb98-1"><a href="13.html#cb98-1" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y <span class="sc">~</span> A <span class="sc">*</span> L, <span class="at">family =</span> <span class="fu">binomial</span>(), <span class="at">data =</span> df)</span>
+<span id="cb98-2"><a href="13.html#cb98-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb98-3"><a href="13.html#cb98-3" aria-hidden="true" tabindex="-1"></a>broom<span class="sc">::</span><span class="fu">tidy</span>(fit)</span></code></pre></div>
+<pre><code>#&gt; # A tibble: 4 × 5
+#&gt;   term         estimate std.error statistic p.value
+#&gt;   &lt;chr&gt;           &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+#&gt; 1 (Intercept) -1.10e+ 0      1.15 -9.51e- 1   0.341
+#&gt; 2 A1          -4.59e-16      1.63 -2.81e-16   1    
+#&gt; 3 L1           1.79e+ 0      1.68  1.06e+ 0   0.287
+#&gt; 4 A1:L1        0             2.16  0          1</code></pre>
+<p>Estimate mean value of <code>Y</code> for each individual when untreated (<code>A</code> = 0) and treated (<code>A</code> = 1).</p>
+<div class="sourceCode" id="cb100"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb100-1"><a href="13.html#cb100-1" aria-hidden="true" tabindex="-1"></a>pred_means <span class="ot">&lt;-</span> </span>
+<span id="cb100-2"><a href="13.html#cb100-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
+<span id="cb100-3"><a href="13.html#cb100-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Y_A_0 =</span> </span>
+<span id="cb100-4"><a href="13.html#cb100-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mean</span>(<span class="fu">predict</span>(fit, <span class="at">newdata =</span> df <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">A =</span> <span class="st">&quot;0&quot;</span>), <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)),</span>
+<span id="cb100-5"><a href="13.html#cb100-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Y_A_1 =</span> </span>
+<span id="cb100-6"><a href="13.html#cb100-6" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mean</span>(<span class="fu">predict</span>(fit, <span class="at">newdata =</span> df <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">A =</span> <span class="st">&quot;1&quot;</span>), <span class="at">type =</span> <span class="st">&quot;response&quot;</span>))</span>
+<span id="cb100-7"><a href="13.html#cb100-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb100-8"><a href="13.html#cb100-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb100-9"><a href="13.html#cb100-9" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(pred_means)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+Y_A_0
+</th>
+<th style="text-align:right;">
+Y_A_1
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+0.50
+</td>
+<td style="text-align:right;">
+0.50
+</td>
+</tr>
+</tbody>
+</table>
+<p>The standardized mean outcomes were 0.50 for both the untreated and treated.</p>
+<p>We’ll now use the same procedure with the NHEFS data.</p>
+<p>Fit linear regression model for weight gain.</p>
+<div class="sourceCode" id="cb101"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb101-1"><a href="13.html#cb101-1" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> </span>
+<span id="cb101-2"><a href="13.html#cb101-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lm</span>(</span>
+<span id="cb101-3"><a href="13.html#cb101-3" aria-hidden="true" tabindex="-1"></a>    wt82_71 <span class="sc">~</span> qsmk <span class="sc">*</span> smokeintensity <span class="sc">+</span> sex <span class="sc">+</span> <span class="fu">poly</span>(age, <span class="dv">2</span>) <span class="sc">+</span> race <span class="sc">+</span> education <span class="sc">+</span></span>
+<span id="cb101-4"><a href="13.html#cb101-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">poly</span>(wt71, <span class="dv">2</span>) <span class="sc">+</span> <span class="fu">I</span>(smokeintensity<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fu">poly</span>(smokeyrs, <span class="dv">2</span>) <span class="sc">+</span> active <span class="sc">+</span></span>
+<span id="cb101-5"><a href="13.html#cb101-5" aria-hidden="true" tabindex="-1"></a>      exercise,</span>
+<span id="cb101-6"><a href="13.html#cb101-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> nhefs_censored</span>
+<span id="cb101-7"><a href="13.html#cb101-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb101-8"><a href="13.html#cb101-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-9"><a href="13.html#cb101-9" aria-hidden="true" tabindex="-1"></a>broom<span class="sc">::</span><span class="fu">tidy</span>(fit)</span></code></pre></div>
+<pre><code>#&gt; # A tibble: 21 × 5
+#&gt;    term           estimate std.error statistic       p.value
+#&gt;    &lt;chr&gt;             &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;         &lt;dbl&gt;
+#&gt;  1 (Intercept)      1.67      0.903      1.85  0.0651       
+#&gt;  2 qsmk1            2.56      0.809      3.16  0.00159      
+#&gt;  3 smokeintensity   0.0491    0.0517     0.950 0.342        
+#&gt;  4 sex1            -1.43      0.469     -3.05  0.00233      
+#&gt;  5 poly(age, 2)1  -90.6      15.7       -5.76  0.00000000994
+#&gt;  6 poly(age, 2)2  -36.2      10.2       -3.53  0.000421     
+#&gt;  7 race1            0.560     0.582      0.963 0.336        
+#&gt;  8 education2       0.790     0.607      1.30  0.193        
+#&gt;  9 education3       0.556     0.556      1.00  0.317        
+#&gt; 10 education4       1.49      0.832      1.79  0.0733       
+#&gt; # … with 11 more rows
+#&gt; # ℹ Use `print(n = ...)` to see more rows</code></pre>
+<p>Estimate mean value of weight gain for each individual (<code>wt82_71</code>) when untreated (<code>qsmk</code> = 0) and treated (<code>qsmk</code> = 1).</p>
+<div class="sourceCode" id="cb103"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb103-1"><a href="13.html#cb103-1" aria-hidden="true" tabindex="-1"></a>pred_means <span class="ot">&lt;-</span> </span>
+<span id="cb103-2"><a href="13.html#cb103-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
+<span id="cb103-3"><a href="13.html#cb103-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">wt82_71_qsmk_0 =</span> <span class="fu">mean</span>(<span class="fu">predict</span>(fit, <span class="at">newdata =</span> nhefs <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">qsmk =</span> <span class="st">&quot;0&quot;</span>))),</span>
+<span id="cb103-4"><a href="13.html#cb103-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">wt82_71_qsmk_1 =</span> <span class="fu">mean</span>(<span class="fu">predict</span>(fit, <span class="at">newdata =</span> nhefs <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">qsmk =</span> <span class="st">&quot;1&quot;</span>)))</span>
+<span id="cb103-5"><a href="13.html#cb103-5" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb103-6"><a href="13.html#cb103-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb103-7"><a href="13.html#cb103-7" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(pred_means)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+wt82_71_qsmk_0
+</th>
+<th style="text-align:right;">
+wt82_71_qsmk_1
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+1.66
+</td>
+<td style="text-align:right;">
+5.18
+</td>
+</tr>
+</tbody>
+</table>
+<p>The standardized mean in the untreated is 1.66 kg, and the standardized mean in the treated is 5.18 kg. So the estimate for the ATE is 3.5 kg.</p>
+<p>We will now use bootstrapping to obtain a confidence interval for this estimate.</p>
+<p>ATE using fit on sample of data.</p>
+<div class="sourceCode" id="cb104"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb104-1"><a href="13.html#cb104-1" aria-hidden="true" tabindex="-1"></a>ate <span class="ot">&lt;-</span> <span class="cf">function</span>(data, sample_rows) {</span>
+<span id="cb104-2"><a href="13.html#cb104-2" aria-hidden="true" tabindex="-1"></a>  fit <span class="ot">&lt;-</span> </span>
+<span id="cb104-3"><a href="13.html#cb104-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">lm</span>(</span>
+<span id="cb104-4"><a href="13.html#cb104-4" aria-hidden="true" tabindex="-1"></a>      wt82_71 <span class="sc">~</span> qsmk <span class="sc">*</span> smokeintensity <span class="sc">+</span> sex <span class="sc">+</span> <span class="fu">poly</span>(age, <span class="dv">2</span>) <span class="sc">+</span> race <span class="sc">+</span> education <span class="sc">+</span></span>
+<span id="cb104-5"><a href="13.html#cb104-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">poly</span>(wt71, <span class="dv">2</span>) <span class="sc">+</span> <span class="fu">I</span>(smokeintensity<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fu">poly</span>(smokeyrs, <span class="dv">2</span>) <span class="sc">+</span> active <span class="sc">+</span></span>
+<span id="cb104-6"><a href="13.html#cb104-6" aria-hidden="true" tabindex="-1"></a>        exercise,</span>
+<span id="cb104-7"><a href="13.html#cb104-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">data =</span> data <span class="sc">%&gt;%</span> <span class="fu">slice</span>(sample_rows)</span>
+<span id="cb104-8"><a href="13.html#cb104-8" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb104-9"><a href="13.html#cb104-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb104-10"><a href="13.html#cb104-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mean</span>(<span class="fu">predict</span>(fit, <span class="at">newdata =</span> nhefs <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">qsmk =</span> <span class="st">&quot;1&quot;</span>))) <span class="sc">-</span></span>
+<span id="cb104-11"><a href="13.html#cb104-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mean</span>(<span class="fu">predict</span>(fit, <span class="at">newdata =</span> nhefs <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">qsmk =</span> <span class="st">&quot;0&quot;</span>)))</span>
+<span id="cb104-12"><a href="13.html#cb104-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Perform bootstrap resampling.</p>
+<div class="sourceCode" id="cb105"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb105-1"><a href="13.html#cb105-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">231</span>)</span>
+<span id="cb105-2"><a href="13.html#cb105-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb105-3"><a href="13.html#cb105-3" aria-hidden="true" tabindex="-1"></a>n_boot <span class="ot">&lt;-</span> <span class="fl">1e4</span></span>
+<span id="cb105-4"><a href="13.html#cb105-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb105-5"><a href="13.html#cb105-5" aria-hidden="true" tabindex="-1"></a>boot_out <span class="ot">&lt;-</span> boot<span class="sc">::</span><span class="fu">boot</span>(<span class="at">data =</span> nhefs_censored, <span class="at">statistic =</span> ate, <span class="at">R =</span> n_boot)</span></code></pre></div>
+<p>Distribution of average treatment effect.</p>
+<div class="sourceCode" id="cb106"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb106-1"><a href="13.html#cb106-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(<span class="at">ate =</span> boot_out<span class="sc">$</span>t) <span class="sc">%&gt;%</span> </span>
+<span id="cb106-2"><a href="13.html#cb106-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(ate)) <span class="sc">+</span></span>
+<span id="cb106-3"><a href="13.html#cb106-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">binwidth =</span> <span class="fl">0.1</span>, <span class="at">boundary =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb106-4"><a href="13.html#cb106-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb106-5"><a href="13.html#cb106-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;Distribution of average treatment effect&quot;</span>,</span>
+<span id="cb106-6"><a href="13.html#cb106-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Average treatment effect&quot;</span>,</span>
+<span id="cb106-7"><a href="13.html#cb106-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Count&quot;</span></span>
+<span id="cb106-8"><a href="13.html#cb106-8" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<p><img src="13_files/figure-html/unnamed-chunk-21-1.png" width="100%" /></p>
+<p>Estimate of ATE with 95% confidence interval calculated using bias-corrected and accelerated (BCa) method.</p>
+<div class="sourceCode" id="cb107"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb107-1"><a href="13.html#cb107-1" aria-hidden="true" tabindex="-1"></a>estimate <span class="ot">&lt;-</span> <span class="fu">ate</span>(<span class="at">data =</span> nhefs_censored, <span class="at">sample_rows =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(nhefs_censored))</span>
+<span id="cb107-2"><a href="13.html#cb107-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb107-3"><a href="13.html#cb107-3" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> </span>
+<span id="cb107-4"><a href="13.html#cb107-4" aria-hidden="true" tabindex="-1"></a>  broom<span class="sc">::</span><span class="fu">tidy</span>(boot_out, <span class="at">conf.int =</span> <span class="cn">TRUE</span>, <span class="at">conf.method =</span> <span class="st">&quot;bca&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb107-5"><a href="13.html#cb107-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(estimate, <span class="at">conf_low =</span> conf.low, <span class="at">conf_high =</span> conf.high)</span>
+<span id="cb107-6"><a href="13.html#cb107-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb107-7"><a href="13.html#cb107-7" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(v, <span class="at">nsmall =</span> <span class="dv">1</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+estimate
+</th>
+<th style="text-align:right;">
+conf_low
+</th>
+<th style="text-align:right;">
+conf_high
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+3.5
+</td>
+<td style="text-align:right;">
+2.6
+</td>
+<td style="text-align:right;">
+4.5
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="12.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="14.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": null,
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/behrman/ci-wi/edit/master/13.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": null,
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "section"
+}
+});
+});
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>17 Causal survival analysis | R Code for Causal Inference: What If</title>
+  <meta name="description" content="17 Causal survival analysis | R Code for Causal Inference: What If." />
+  <meta name="generator" content="bookdown 0.28 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="17 Causal survival analysis | R Code for Causal Inference: What If" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:description" content="17 Causal survival analysis | R Code for Causal Inference: What If." />
+  <meta name="github-repo" content="behrman/ci-wi" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="17 Causal survival analysis | R Code for Causal Inference: What If" />
+  
+  <meta name="twitter:description" content="17 Causal survival analysis | R Code for Causal Inference: What If." />
+  
+
+<meta name="author" content="Bill Behrman" />
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="16.html"/>
+<link rel="next" href="results.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+<script src="libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+/* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><strong><a href="./">R Code for Causal Inference: What If</a></strong></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Welcome</a>
+<ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#how-to-install-required-r-packages"><i class="fa fa-check"></i>How to install required R packages</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#how-to-download-dataset"><i class="fa fa-check"></i>How to download dataset</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#source-for-this-book"><i class="fa fa-check"></i>Source for this book</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="11.html"><a href="11.html"><i class="fa fa-check"></i>11 Why Model?</a>
+<ul>
+<li class="chapter" data-level="" data-path="11.html"><a href="11.html#data-cannot-speak-for-themselves"><i class="fa fa-check"></i>11.1 Data cannot speak for themselves</a></li>
+<li class="chapter" data-level="" data-path="11.html"><a href="11.html#parametric-estimators-of-the-conditional-mean"><i class="fa fa-check"></i>11.2 Parametric estimators of the conditional mean</a></li>
+<li class="chapter" data-level="" data-path="11.html"><a href="11.html#nonparametric-estimators-of-the-conditional-mean"><i class="fa fa-check"></i>11.3 Nonparametric estimators of the conditional mean</a></li>
+<li class="chapter" data-level="" data-path="11.html"><a href="11.html#smoothing"><i class="fa fa-check"></i>11.4 Smoothing</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html"><i class="fa fa-check"></i>12 IP weighting and marginal structural models</a>
+<ul>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html#the-causal-question"><i class="fa fa-check"></i>12.1 The causal question</a></li>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html#estimating-ip-weights-via-modeling"><i class="fa fa-check"></i>12.2 Estimating IP weights via modeling</a></li>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html#stabilized-ip-weights"><i class="fa fa-check"></i>12.3 Stabilized IP weights</a>
+<ul>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html#fine-point-12.2-checking-positivity"><i class="fa fa-check"></i>Fine Point 12.2 Checking positivity</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html#marginal-structural-models"><i class="fa fa-check"></i>12.4 Marginal structural models</a></li>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html#effect-modification-and-marginal-structural-models"><i class="fa fa-check"></i>12.5 Effect modification and marginal structural models</a></li>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html#censoring-and-missing-data"><i class="fa fa-check"></i>12.6 Censoring and missing data</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="13.html"><a href="13.html"><i class="fa fa-check"></i>13 Standardization and the parametric g-formula</a>
+<ul>
+<li class="chapter" data-level="" data-path="13.html"><a href="13.html#standardization-as-an-alternative-to-ip-weighting"><i class="fa fa-check"></i>13.1 Standardization as an alternative to IP weighting</a></li>
+<li class="chapter" data-level="" data-path="13.html"><a href="13.html#estimating-the-mean-outcome-via-modeling"><i class="fa fa-check"></i>13.2 Estimating the mean outcome via modeling</a></li>
+<li class="chapter" data-level="" data-path="13.html"><a href="13.html#standardizing-the-mean-outcome-to-the-confounder-distribution"><i class="fa fa-check"></i>13.3 Standardizing the mean outcome to the confounder distribution</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="14.html"><a href="14.html"><i class="fa fa-check"></i>14 G-estimation and structural nested models</a>
+<ul>
+<li class="chapter" data-level="" data-path="14.html"><a href="14.html#the-causal-question-revisited"><i class="fa fa-check"></i>14.1 The causal question revisited</a></li>
+<li class="chapter" data-level="" data-path="14.html"><a href="14.html#rank-preservation"><i class="fa fa-check"></i>14.4 Rank preservation</a></li>
+<li class="chapter" data-level="" data-path="14.html"><a href="14.html#g-estimation"><i class="fa fa-check"></i>14.5 G-estimation</a></li>
+<li class="chapter" data-level="" data-path="14.html"><a href="14.html#structural-nested-models-with-two-or-more-parameters"><i class="fa fa-check"></i>14.6 Structural nested models with two or more parameters</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="15.html"><a href="15.html"><i class="fa fa-check"></i>15 Outcome regression and propensity scores</a>
+<ul>
+<li class="chapter" data-level="" data-path="15.html"><a href="15.html#outcome-regression"><i class="fa fa-check"></i>15.1 Outcome regression</a></li>
+<li class="chapter" data-level="" data-path="15.html"><a href="15.html#propensity-scores"><i class="fa fa-check"></i>15.2 Propensity scores</a></li>
+<li class="chapter" data-level="" data-path="15.html"><a href="15.html#propensity-stratification-and-standardization"><i class="fa fa-check"></i>15.3 Propensity stratification and standardization</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="16.html"><a href="16.html"><i class="fa fa-check"></i>16 Instrumental variable estimation</a>
+<ul>
+<li class="chapter" data-level="" data-path="16.html"><a href="16.html#the-three-instrumental-conditions"><i class="fa fa-check"></i>16.1 The three instrumental conditions</a></li>
+<li class="chapter" data-level="" data-path="16.html"><a href="16.html#the-usual-iv-estimand"><i class="fa fa-check"></i>16.2 The usual IV estimand</a></li>
+<li class="chapter" data-level="" data-path="16.html"><a href="16.html#the-three-instrumental-conditions-revisited"><i class="fa fa-check"></i>16.5 The three instrumental conditions revisited</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="17.html"><a href="17.html"><i class="fa fa-check"></i>17 Causal survival analysis</a>
+<ul>
+<li class="chapter" data-level="" data-path="17.html"><a href="17.html#hazards-and-risks"><i class="fa fa-check"></i>17.1 Hazards and risks</a></li>
+<li class="chapter" data-level="" data-path="17.html"><a href="17.html#from-hazards-to-risks"><i class="fa fa-check"></i>17.2 From hazards to risks</a></li>
+<li class="chapter" data-level="" data-path="17.html"><a href="17.html#ip-weighting-of-marginal-structural-models"><i class="fa fa-check"></i>17.4 IP weighting of marginal structural models</a></li>
+<li class="chapter" data-level="" data-path="17.html"><a href="17.html#the-parametric-g-formula"><i class="fa fa-check"></i>17.5 The parametric g-formula</a></li>
+<li class="chapter" data-level="" data-path="17.html"><a href="17.html#g-estimation-of-structural-nested-models"><i class="fa fa-check"></i>17.6 G-estimation of structural nested models</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="results.html"><a href="results.html"><i class="fa fa-check"></i>Results</a>
+<ul>
+<li class="chapter" data-level="" data-path="results.html"><a href="results.html#average-treatment-effect"><i class="fa fa-check"></i>Average treatment effect</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">R Code for Causal Inference: What If</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="causal-survival-analysis" class="section level1 unnumbered hasAnchor">
+<h1>17 Causal survival analysis<a href="17.html#causal-survival-analysis" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div class="sourceCode" id="cb189"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb189-1"><a href="17.html#cb189-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Packages</span></span>
+<span id="cb189-2"><a href="17.html#cb189-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb189-3"><a href="17.html#cb189-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb189-4"><a href="17.html#cb189-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Parameters</span></span>
+<span id="cb189-5"><a href="17.html#cb189-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># NHEFS data</span></span>
+<span id="cb189-6"><a href="17.html#cb189-6" aria-hidden="true" tabindex="-1"></a>file_nhefs <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;data/nhefs.rds&quot;</span>)</span>
+<span id="cb189-7"><a href="17.html#cb189-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb189-8"><a href="17.html#cb189-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Round and format vector</span></span>
+<span id="cb189-9"><a href="17.html#cb189-9" aria-hidden="true" tabindex="-1"></a>round_format <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">nsmall =</span> <span class="dv">2</span>, ...) {</span>
+<span id="cb189-10"><a href="17.html#cb189-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">format</span>(<span class="fu">round</span>(x, <span class="at">digits =</span> nsmall), <span class="at">nsmall =</span> nsmall, ...)</span>
+<span id="cb189-11"><a href="17.html#cb189-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb189-12"><a href="17.html#cb189-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Print tibble</span></span>
+<span id="cb189-13"><a href="17.html#cb189-13" aria-hidden="true" tabindex="-1"></a>kable <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">cols =</span> <span class="fu">where</span>(is.double), <span class="at">nsmall =</span> <span class="dv">2</span>, <span class="at">align =</span> <span class="st">&quot;r&quot;</span>, ...) {</span>
+<span id="cb189-14"><a href="17.html#cb189-14" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">%&gt;%</span></span>
+<span id="cb189-15"><a href="17.html#cb189-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="fu">across</span>({{cols}}, round_format, <span class="at">nsmall =</span> nsmall)) <span class="sc">%&gt;%</span></span>
+<span id="cb189-16"><a href="17.html#cb189-16" aria-hidden="true" tabindex="-1"></a>    knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">align =</span> align, ...) <span class="sc">%&gt;%</span> </span>
+<span id="cb189-17"><a href="17.html#cb189-17" aria-hidden="true" tabindex="-1"></a>    kableExtra<span class="sc">::</span><span class="fu">kable_styling</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>, <span class="at">position =</span> <span class="st">&quot;left&quot;</span>)</span>
+<span id="cb189-18"><a href="17.html#cb189-18" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb189-19"><a href="17.html#cb189-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Print min, mean, and max of vector</span></span>
+<span id="cb189-20"><a href="17.html#cb189-20" aria-hidden="true" tabindex="-1"></a>kable_summary <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">nsmall =</span> <span class="dv">2</span>, ...) {</span>
+<span id="cb189-21"><a href="17.html#cb189-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">min =</span> <span class="fu">min</span>(x), <span class="at">mean =</span> <span class="fu">mean</span>(x), <span class="at">max =</span> <span class="fu">max</span>(x)) <span class="sc">%&gt;%</span></span>
+<span id="cb189-22"><a href="17.html#cb189-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">kable</span>(<span class="at">nsmall =</span> nsmall, ...)</span>
+<span id="cb189-23"><a href="17.html#cb189-23" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb189-24"><a href="17.html#cb189-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb189-25"><a href="17.html#cb189-25" aria-hidden="true" tabindex="-1"></a><span class="co">#===============================================================================</span></span>
+<span id="cb189-26"><a href="17.html#cb189-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb189-27"><a href="17.html#cb189-27" aria-hidden="true" tabindex="-1"></a><span class="co"># NHEFS data with qsmk as a double</span></span>
+<span id="cb189-28"><a href="17.html#cb189-28" aria-hidden="true" tabindex="-1"></a>nhefs <span class="ot">&lt;-</span> </span>
+<span id="cb189-29"><a href="17.html#cb189-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_rds</span>(file_nhefs) <span class="sc">%&gt;%</span> </span>
+<span id="cb189-30"><a href="17.html#cb189-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">qsmk =</span> <span class="fu">as.double</span>(qsmk) <span class="sc">-</span> <span class="dv">1</span>)</span></code></pre></div>
+<div id="hazards-and-risks" class="section level2 unnumbered hasAnchor">
+<h2>17.1 Hazards and risks<a href="17.html#hazards-and-risks" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>In the following, we will use these variables:</p>
+<ul>
+<li><code>dadth</code>: Day of death</li>
+<li><code>death</code>: Death by 1992
+<ul>
+<li>0: No</li>
+<li>1: Yes</li>
+</ul></li>
+<li><code>modth</code>: Month of death</li>
+<li><code>yrdth</code>: Year of death</li>
+</ul>
+<p>Number of people in dataset.</p>
+<div class="sourceCode" id="cb190"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb190-1"><a href="17.html#cb190-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(nhefs)</span></code></pre></div>
+<pre><code>#&gt; [1] 1629</code></pre>
+<p>Range of ages.</p>
+<div class="sourceCode" id="cb192"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb192-1"><a href="17.html#cb192-1" aria-hidden="true" tabindex="-1"></a><span class="fu">range</span>(nhefs<span class="sc">$</span>age)</span></code></pre></div>
+<pre><code>#&gt; [1] 25 74</code></pre>
+<p>The number of people who died by the end of 1992.</p>
+<div class="sourceCode" id="cb194"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb194-1"><a href="17.html#cb194-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> </span>
+<span id="cb194-2"><a href="17.html#cb194-2" aria-hidden="true" tabindex="-1"></a>  nhefs <span class="sc">%&gt;%</span> </span>
+<span id="cb194-3"><a href="17.html#cb194-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(death)</span>
+<span id="cb194-4"><a href="17.html#cb194-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb194-5"><a href="17.html#cb194-5" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(v)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+death
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1311
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+318
+</td>
+</tr>
+</tbody>
+</table>
+<p>Of the 1629 individuals in the dataset, 318 died before the end of 1992, and the remaining 1311 survived.</p>
+<p>The variables <code>death</code>, <code>yrdth</code>, <code>modth</code>, and <code>dadth</code>.</p>
+<div class="sourceCode" id="cb195"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb195-1"><a href="17.html#cb195-1" aria-hidden="true" tabindex="-1"></a>nhefs <span class="sc">%&gt;%</span> </span>
+<span id="cb195-2"><a href="17.html#cb195-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(death, <span class="sc">!</span><span class="fu">is.na</span>(yrdth), <span class="sc">!</span><span class="fu">is.na</span>(modth), <span class="sc">!</span><span class="fu">is.na</span>(dadth))</span></code></pre></div>
+<pre><code>#&gt; # A tibble: 3 × 5
+#&gt;   death `!is.na(yrdth)` `!is.na(modth)` `!is.na(dadth)`     n
+#&gt;   &lt;fct&gt; &lt;lgl&gt;           &lt;lgl&gt;           &lt;lgl&gt;           &lt;int&gt;
+#&gt; 1 0     FALSE           FALSE           FALSE            1307
+#&gt; 2 0     FALSE           TRUE            TRUE                4
+#&gt; 3 1     TRUE            TRUE            TRUE              318</code></pre>
+<p>Note that four individuals have months and days of death but no year. They are classified by the <code>death</code> variable as having not died. For the following, we will assume that the <code>death</code> variable is correct.</p>
+<p>The follow-up period began on January 1, 1983 and lasted through December 31, 1992. For those who died, we will add the variable <code>time_death</code> for the month of the follow-up in which they died, ranging from 1 for January 1983 to 120 for December 1992.</p>
+<div class="sourceCode" id="cb197"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb197-1"><a href="17.html#cb197-1" aria-hidden="true" tabindex="-1"></a>nhefs <span class="ot">&lt;-</span> </span>
+<span id="cb197-2"><a href="17.html#cb197-2" aria-hidden="true" tabindex="-1"></a>  nhefs <span class="sc">%&gt;%</span> </span>
+<span id="cb197-3"><a href="17.html#cb197-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb197-4"><a href="17.html#cb197-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">time_death =</span> <span class="fu">if_else</span>(death <span class="sc">==</span> <span class="st">&quot;1&quot;</span>, <span class="dv">12</span> <span class="sc">*</span> (yrdth <span class="sc">-</span> <span class="dv">83</span>) <span class="sc">+</span> modth, <span class="cn">NA_real_</span>)</span>
+<span id="cb197-5"><a href="17.html#cb197-5" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<p>Range of values for <code>time_death</code>.</p>
+<div class="sourceCode" id="cb198"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb198-1"><a href="17.html#cb198-1" aria-hidden="true" tabindex="-1"></a><span class="fu">range</span>(nhefs<span class="sc">$</span>time_death, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>#&gt; [1]   1 120</code></pre>
+<p>Number of individuals who died by whether or not they quit smoking (<code>qsmk</code>).</p>
+<div class="sourceCode" id="cb200"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb200-1"><a href="17.html#cb200-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> </span>
+<span id="cb200-2"><a href="17.html#cb200-2" aria-hidden="true" tabindex="-1"></a>  nhefs <span class="sc">%&gt;%</span> </span>
+<span id="cb200-3"><a href="17.html#cb200-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(time_death)) <span class="sc">%&gt;%</span> </span>
+<span id="cb200-4"><a href="17.html#cb200-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(qsmk)</span>
+<span id="cb200-5"><a href="17.html#cb200-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb200-6"><a href="17.html#cb200-6" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="at">cols =</span> <span class="cn">NULL</span>, v)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+qsmk
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+216
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+102
+</td>
+</tr>
+</tbody>
+</table>
+<p>Of the 318 individuals who died, 216 did not quit smoking and 102 did quit smoking.</p>
+<p>For each treatment group (<code>qsmk</code>) and each follow-up month, calculate the cumulative deaths (<code>deaths_cum</code>), the number who survived (<code>survived</code>), and the proportion who survived (<code>survival</code>).</p>
+<div class="sourceCode" id="cb201"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb201-1"><a href="17.html#cb201-1" aria-hidden="true" tabindex="-1"></a>time_max <span class="ot">&lt;-</span> <span class="fu">max</span>(nhefs<span class="sc">$</span>time_death, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb201-2"><a href="17.html#cb201-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb201-3"><a href="17.html#cb201-3" aria-hidden="true" tabindex="-1"></a>survival_1 <span class="ot">&lt;-</span> </span>
+<span id="cb201-4"><a href="17.html#cb201-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">expand_grid</span>(<span class="at">qsmk =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">1</span>, <span class="at">time =</span> <span class="dv">0</span><span class="sc">:</span>time_max) <span class="sc">%&gt;%</span> </span>
+<span id="cb201-5"><a href="17.html#cb201-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
+<span id="cb201-6"><a href="17.html#cb201-6" aria-hidden="true" tabindex="-1"></a>    nhefs <span class="sc">%&gt;%</span> </span>
+<span id="cb201-7"><a href="17.html#cb201-7" aria-hidden="true" tabindex="-1"></a>      <span class="fu">filter</span>(death <span class="sc">==</span> <span class="st">&quot;1&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb201-8"><a href="17.html#cb201-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">count</span>(qsmk, <span class="at">time =</span> time_death, <span class="at">name =</span> <span class="st">&quot;deaths&quot;</span>),</span>
+<span id="cb201-9"><a href="17.html#cb201-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;qsmk&quot;</span>, <span class="st">&quot;time&quot;</span>)</span>
+<span id="cb201-10"><a href="17.html#cb201-10" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb201-11"><a href="17.html#cb201-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">replace_na</span>(<span class="fu">list</span>(<span class="at">deaths =</span> <span class="dv">0</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb201-12"><a href="17.html#cb201-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(qsmk) <span class="sc">%&gt;%</span> </span>
+<span id="cb201-13"><a href="17.html#cb201-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb201-14"><a href="17.html#cb201-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">deaths_cum =</span> <span class="fu">cumsum</span>(deaths),</span>
+<span id="cb201-15"><a href="17.html#cb201-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">survived =</span> <span class="fu">sum</span>(nhefs<span class="sc">$</span>qsmk <span class="sc">==</span> <span class="fu">first</span>(qsmk)) <span class="sc">-</span> deaths_cum,</span>
+<span id="cb201-16"><a href="17.html#cb201-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">survival =</span> survived <span class="sc">/</span> <span class="fu">sum</span>(nhefs<span class="sc">$</span>qsmk <span class="sc">==</span> <span class="fu">first</span>(qsmk))</span>
+<span id="cb201-17"><a href="17.html#cb201-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb201-18"><a href="17.html#cb201-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb201-19"><a href="17.html#cb201-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb201-20"><a href="17.html#cb201-20" aria-hidden="true" tabindex="-1"></a>survival_1</span></code></pre></div>
+<pre><code>#&gt; # A tibble: 242 × 6
+#&gt;     qsmk  time deaths deaths_cum survived survival
+#&gt;    &lt;dbl&gt; &lt;dbl&gt;  &lt;int&gt;      &lt;int&gt;    &lt;int&gt;    &lt;dbl&gt;
+#&gt;  1     0     0      0          0     1201    1    
+#&gt;  2     0     1      0          0     1201    1    
+#&gt;  3     0     2      0          0     1201    1    
+#&gt;  4     0     3      0          0     1201    1    
+#&gt;  5     0     4      1          1     1200    0.999
+#&gt;  6     0     5      1          2     1199    0.998
+#&gt;  7     0     6      0          2     1199    0.998
+#&gt;  8     0     7      1          3     1198    0.998
+#&gt;  9     0     8      2          5     1196    0.996
+#&gt; 10     0     9      0          5     1196    0.996
+#&gt; # … with 232 more rows
+#&gt; # ℹ Use `print(n = ...)` to see more rows</code></pre>
+<p>Figure 17.1.</p>
+<div class="sourceCode" id="cb203"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb203-1"><a href="17.html#cb203-1" aria-hidden="true" tabindex="-1"></a>survival_plot_details <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">y_quitters =</span> <span class="fl">0.74</span>) {</span>
+<span id="cb203-2"><a href="17.html#cb203-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb203-3"><a href="17.html#cb203-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">annotate</span>(</span>
+<span id="cb203-4"><a href="17.html#cb203-4" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;text&quot;</span>,</span>
+<span id="cb203-5"><a href="17.html#cb203-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="dv">119</span>,</span>
+<span id="cb203-6"><a href="17.html#cb203-6" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="fu">c</span>(<span class="fl">0.87</span>, y_quitters),</span>
+<span id="cb203-7"><a href="17.html#cb203-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">hjust =</span> <span class="dv">1</span>,</span>
+<span id="cb203-8"><a href="17.html#cb203-8" aria-hidden="true" tabindex="-1"></a>      <span class="at">label =</span> <span class="fu">c</span>(<span class="st">&quot;Non-quitters&quot;</span>, <span class="st">&quot;Quitters&quot;</span>)</span>
+<span id="cb203-9"><a href="17.html#cb203-9" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb203-10"><a href="17.html#cb203-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coord_cartesian</span>(<span class="at">ylim =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="dv">1</span>)),</span>
+<span id="cb203-11"><a href="17.html#cb203-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> scales<span class="sc">::</span><span class="fu">breaks_width</span>(<span class="dv">20</span>)),</span>
+<span id="cb203-12"><a href="17.html#cb203-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">&quot;none&quot;</span>),</span>
+<span id="cb203-13"><a href="17.html#cb203-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(</span>
+<span id="cb203-14"><a href="17.html#cb203-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="st">&quot;Month of follow-up&quot;</span>,</span>
+<span id="cb203-15"><a href="17.html#cb203-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="st">&quot;Survival probability&quot;</span></span>
+<span id="cb203-16"><a href="17.html#cb203-16" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb203-17"><a href="17.html#cb203-17" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb203-18"><a href="17.html#cb203-18" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb203-19"><a href="17.html#cb203-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb203-20"><a href="17.html#cb203-20" aria-hidden="true" tabindex="-1"></a>survival_1 <span class="sc">%&gt;%</span> </span>
+<span id="cb203-21"><a href="17.html#cb203-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(time, survival, <span class="at">color =</span> <span class="fu">as.factor</span>(qsmk))) <span class="sc">+</span></span>
+<span id="cb203-22"><a href="17.html#cb203-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb203-23"><a href="17.html#cb203-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">survival_plot_details</span>() <span class="sc">+</span></span>
+<span id="cb203-24"><a href="17.html#cb203-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Figure 17.1&quot;</span>)</span></code></pre></div>
+<p><img src="17_files/figure-html/unnamed-chunk-10-1.png" width="100%" /></p>
+<p>Log-rank test to compare survival curves.</p>
+<div class="sourceCode" id="cb204"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb204-1"><a href="17.html#cb204-1" aria-hidden="true" tabindex="-1"></a>test <span class="ot">&lt;-</span> </span>
+<span id="cb204-2"><a href="17.html#cb204-2" aria-hidden="true" tabindex="-1"></a>  nhefs <span class="sc">%&gt;%</span> </span>
+<span id="cb204-3"><a href="17.html#cb204-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(</span>
+<span id="cb204-4"><a href="17.html#cb204-4" aria-hidden="true" tabindex="-1"></a>    qsmk,</span>
+<span id="cb204-5"><a href="17.html#cb204-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">time =</span> <span class="fu">replace_na</span>(time_death, <span class="at">replace =</span> time_max),</span>
+<span id="cb204-6"><a href="17.html#cb204-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">event =</span> <span class="fu">as.double</span>(death) <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb204-7"><a href="17.html#cb204-7" aria-hidden="true" tabindex="-1"></a>  )  <span class="sc">%&gt;%</span> </span>
+<span id="cb204-8"><a href="17.html#cb204-8" aria-hidden="true" tabindex="-1"></a>  survival<span class="sc">::</span><span class="fu">survdiff</span>(</span>
+<span id="cb204-9"><a href="17.html#cb204-9" aria-hidden="true" tabindex="-1"></a>    survival<span class="sc">::</span><span class="fu">Surv</span>(<span class="at">time =</span> time, <span class="at">event =</span> event) <span class="sc">~</span> qsmk,</span>
+<span id="cb204-10"><a href="17.html#cb204-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> .</span>
+<span id="cb204-11"><a href="17.html#cb204-11" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb204-12"><a href="17.html#cb204-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb204-13"><a href="17.html#cb204-13" aria-hidden="true" tabindex="-1"></a>broom<span class="sc">::</span><span class="fu">glance</span>(test) <span class="sc">%&gt;%</span> </span>
+<span id="cb204-14"><a href="17.html#cb204-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">p_value =</span> p.value) <span class="sc">%&gt;%</span> </span>
+<span id="cb204-15"><a href="17.html#cb204-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">nsmall =</span> <span class="dv">3</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+p_value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+0.005
+</td>
+</tr>
+</tbody>
+</table>
+<p>Survival at 120 months.</p>
+<div class="sourceCode" id="cb205"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb205-1"><a href="17.html#cb205-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> </span>
+<span id="cb205-2"><a href="17.html#cb205-2" aria-hidden="true" tabindex="-1"></a>  survival_1 <span class="sc">%&gt;%</span> </span>
+<span id="cb205-3"><a href="17.html#cb205-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(time <span class="sc">==</span> <span class="dv">120</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb205-4"><a href="17.html#cb205-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(qsmk, survival)</span>
+<span id="cb205-5"><a href="17.html#cb205-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb205-6"><a href="17.html#cb205-6" aria-hidden="true" tabindex="-1"></a>v <span class="sc">%&gt;%</span> </span>
+<span id="cb205-7"><a href="17.html#cb205-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">cols =</span> survival, <span class="at">nsmall =</span> <span class="dv">3</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+qsmk
+</th>
+<th style="text-align:right;">
+survival
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0.820
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.762
+</td>
+</tr>
+</tbody>
+</table>
+<p>Survival at 120 months was 82.0% among non-quitters and 76.2% among quitters. The risk at 120 months was 18.0% among non-quitters and 23.8% among quitters.</p>
+<p>Hazard at 120 months.</p>
+<div class="sourceCode" id="cb206"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb206-1"><a href="17.html#cb206-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> </span>
+<span id="cb206-2"><a href="17.html#cb206-2" aria-hidden="true" tabindex="-1"></a>  survival_1 <span class="sc">%&gt;%</span> </span>
+<span id="cb206-3"><a href="17.html#cb206-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb206-4"><a href="17.html#cb206-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">survived_prev =</span> <span class="fu">lag</span>(survived),</span>
+<span id="cb206-5"><a href="17.html#cb206-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">hazard =</span> deaths <span class="sc">/</span> survived_prev</span>
+<span id="cb206-6"><a href="17.html#cb206-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb206-7"><a href="17.html#cb206-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(time <span class="sc">==</span> <span class="dv">120</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb206-8"><a href="17.html#cb206-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(qsmk, time, deaths, survived_prev, hazard)</span>
+<span id="cb206-9"><a href="17.html#cb206-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb206-10"><a href="17.html#cb206-10" aria-hidden="true" tabindex="-1"></a>v <span class="sc">%&gt;%</span> </span>
+<span id="cb206-11"><a href="17.html#cb206-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">cols =</span> hazard, <span class="at">nsmall =</span> <span class="dv">4</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+qsmk
+</th>
+<th style="text-align:right;">
+time
+</th>
+<th style="text-align:right;">
+deaths
+</th>
+<th style="text-align:right;">
+survived_prev
+</th>
+<th style="text-align:right;">
+hazard
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+120
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+986
+</td>
+<td style="text-align:right;">
+0.0010
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+120
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+326
+</td>
+<td style="text-align:right;">
+0.0000
+</td>
+</tr>
+</tbody>
+</table>
+<p>The hazard at 120 months was 0.10% among non-quitters and 0% among quitters.</p>
+</div>
+<div id="from-hazards-to-risks" class="section level2 unnumbered hasAnchor">
+<h2>17.2 From hazards to risks<a href="17.html#from-hazards-to-risks" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Time-event tibble for person in person-time format.</p>
+<div class="sourceCode" id="cb207"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb207-1"><a href="17.html#cb207-1" aria-hidden="true" tabindex="-1"></a>time_event <span class="ot">&lt;-</span> <span class="cf">function</span>(death, time_death) {</span>
+<span id="cb207-2"><a href="17.html#cb207-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopifnot</span>(death <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;0&quot;</span>, <span class="st">&quot;1&quot;</span>))</span>
+<span id="cb207-3"><a href="17.html#cb207-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (death <span class="sc">==</span> <span class="st">&quot;0&quot;</span>) {</span>
+<span id="cb207-4"><a href="17.html#cb207-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tibble</span>(<span class="at">time =</span> <span class="fu">seq_len</span>(time_max) <span class="sc">-</span> <span class="dv">1</span>, <span class="at">event =</span> <span class="dv">0</span>)</span>
+<span id="cb207-5"><a href="17.html#cb207-5" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (death <span class="sc">==</span> <span class="st">&quot;1&quot;</span>) {</span>
+<span id="cb207-6"><a href="17.html#cb207-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tibble</span>(</span>
+<span id="cb207-7"><a href="17.html#cb207-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">time =</span> <span class="fu">seq_len</span>(time_death) <span class="sc">-</span> <span class="dv">1</span>,</span>
+<span id="cb207-8"><a href="17.html#cb207-8" aria-hidden="true" tabindex="-1"></a>      <span class="at">event =</span> <span class="fu">rep</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">1</span>, <span class="fu">c</span>(time_death <span class="sc">-</span> <span class="dv">1</span>, <span class="dv">1</span>))</span>
+<span id="cb207-9"><a href="17.html#cb207-9" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb207-10"><a href="17.html#cb207-10" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb207-11"><a href="17.html#cb207-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>NHEFS dataset in person-time format.</p>
+<div class="sourceCode" id="cb208"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb208-1"><a href="17.html#cb208-1" aria-hidden="true" tabindex="-1"></a>nhefs_pt <span class="ot">&lt;-</span> </span>
+<span id="cb208-2"><a href="17.html#cb208-2" aria-hidden="true" tabindex="-1"></a>  nhefs <span class="sc">%&gt;%</span> </span>
+<span id="cb208-3"><a href="17.html#cb208-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(seqn, qsmk, death, time_death) <span class="sc">%&gt;%</span> </span>
+<span id="cb208-4"><a href="17.html#cb208-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb208-5"><a href="17.html#cb208-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">time_event =</span> <span class="fu">list</span>(<span class="fu">time_event</span>(death, time_death))) <span class="sc">%&gt;%</span> </span>
+<span id="cb208-6"><a href="17.html#cb208-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(time_event)</span></code></pre></div>
+<p>Number of rows in <code>nhefs_pt</code>.</p>
+<div class="sourceCode" id="cb209"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb209-1"><a href="17.html#cb209-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(nhefs_pt)</span></code></pre></div>
+<pre><code>#&gt; [1] 176764</code></pre>
+<p>Fit logistic regression for hazards.</p>
+<div class="sourceCode" id="cb211"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb211-1"><a href="17.html#cb211-1" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> </span>
+<span id="cb211-2"><a href="17.html#cb211-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glm</span>(</span>
+<span id="cb211-3"><a href="17.html#cb211-3" aria-hidden="true" tabindex="-1"></a>    event <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>) <span class="sc">+</span> qsmk <span class="sc">*</span> <span class="fu">poly</span>(time, <span class="dv">2</span>),</span>
+<span id="cb211-4"><a href="17.html#cb211-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> <span class="fu">binomial</span>(),</span>
+<span id="cb211-5"><a href="17.html#cb211-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> nhefs_pt</span>
+<span id="cb211-6"><a href="17.html#cb211-6" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb211-7"><a href="17.html#cb211-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb211-8"><a href="17.html#cb211-8" aria-hidden="true" tabindex="-1"></a>broom<span class="sc">::</span><span class="fu">tidy</span>(fit)</span></code></pre></div>
+<pre><code>#&gt; # A tibble: 6 × 5
+#&gt;   term                estimate std.error statistic p.value
+#&gt;   &lt;chr&gt;                  &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+#&gt; 1 (Intercept)           -6.44     0.0698    -92.2   0     
+#&gt; 2 poly(time, 2)1        71.0     30.8         2.30  0.0212
+#&gt; 3 poly(time, 2)2       -56.5     30.1        -1.88  0.0604
+#&gt; 4 qsmk                   0.306    0.125       2.45  0.0145
+#&gt; 5 poly(time, 2)1:qsmk  -99.0     57.3        -1.73  0.0843
+#&gt; 6 poly(time, 2)2:qsmk  -72.6     56.1        -1.29  0.196</code></pre>
+<p>Calculate survival curves.</p>
+<div class="sourceCode" id="cb213"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb213-1"><a href="17.html#cb213-1" aria-hidden="true" tabindex="-1"></a>survival <span class="ot">&lt;-</span> <span class="cf">function</span>(fit) {</span>
+<span id="cb213-2"><a href="17.html#cb213-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">expand_grid</span>(<span class="at">qsmk =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">1</span>, <span class="at">time =</span> <span class="dv">0</span><span class="sc">:</span>time_max) <span class="sc">%&gt;%</span> </span>
+<span id="cb213-3"><a href="17.html#cb213-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(qsmk) <span class="sc">%&gt;%</span> </span>
+<span id="cb213-4"><a href="17.html#cb213-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb213-5"><a href="17.html#cb213-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">survival =</span> </span>
+<span id="cb213-6"><a href="17.html#cb213-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">cumprod</span>(</span>
+<span id="cb213-7"><a href="17.html#cb213-7" aria-hidden="true" tabindex="-1"></a>          <span class="dv">1</span> <span class="sc">-</span> <span class="fu">predict</span>(fit, <span class="at">newdata =</span> <span class="fu">tibble</span>(qsmk, time), <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb213-8"><a href="17.html#cb213-8" aria-hidden="true" tabindex="-1"></a>        ) <span class="sc">%&gt;%</span> </span>
+<span id="cb213-9"><a href="17.html#cb213-9" aria-hidden="true" tabindex="-1"></a>        <span class="fu">lag</span>(<span class="at">default =</span> <span class="dv">1</span>)</span>
+<span id="cb213-10"><a href="17.html#cb213-10" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span> </span>
+<span id="cb213-11"><a href="17.html#cb213-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>()</span>
+<span id="cb213-12"><a href="17.html#cb213-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Figure 17.4.</p>
+<div class="sourceCode" id="cb214"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb214-1"><a href="17.html#cb214-1" aria-hidden="true" tabindex="-1"></a>survival_2 <span class="ot">&lt;-</span> <span class="fu">survival</span>(fit)</span>
+<span id="cb214-2"><a href="17.html#cb214-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb214-3"><a href="17.html#cb214-3" aria-hidden="true" tabindex="-1"></a>survival_2 <span class="sc">%&gt;%</span> </span>
+<span id="cb214-4"><a href="17.html#cb214-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(time, survival, <span class="at">color =</span> <span class="fu">as.factor</span>(qsmk))) <span class="sc">+</span></span>
+<span id="cb214-5"><a href="17.html#cb214-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb214-6"><a href="17.html#cb214-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">survival_plot_details</span>() <span class="sc">+</span></span>
+<span id="cb214-7"><a href="17.html#cb214-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Figure 17.4&quot;</span>)</span></code></pre></div>
+<p><img src="17_files/figure-html/unnamed-chunk-19-1.png" width="100%" /></p>
+<p>Superposition of Figures 17.1 and 17.4.</p>
+<div class="sourceCode" id="cb215"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb215-1"><a href="17.html#cb215-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(time, survival)) <span class="sc">+</span></span>
+<span id="cb215-2"><a href="17.html#cb215-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">group =</span> qsmk), <span class="at">data =</span> survival_1, <span class="at">color =</span> <span class="st">&quot;grey60&quot;</span>) <span class="sc">+</span></span>
+<span id="cb215-3"><a href="17.html#cb215-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">color =</span> <span class="fu">as.factor</span>(qsmk)), <span class="at">data =</span> survival_2) <span class="sc">+</span></span>
+<span id="cb215-4"><a href="17.html#cb215-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">survival_plot_details</span>() <span class="sc">+</span> </span>
+<span id="cb215-5"><a href="17.html#cb215-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Superposition of Figures 17.1 and 17.4&quot;</span>)</span></code></pre></div>
+<p><img src="17_files/figure-html/unnamed-chunk-20-1.png" width="100%" /></p>
+</div>
+<div id="ip-weighting-of-marginal-structural-models" class="section level2 unnumbered hasAnchor">
+<h2>17.4 IP weighting of marginal structural models<a href="17.html#ip-weighting-of-marginal-structural-models" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Stabilized IP weights for treatment.</p>
+<div class="sourceCode" id="cb216"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb216-1"><a href="17.html#cb216-1" aria-hidden="true" tabindex="-1"></a>ip_numerator <span class="ot">&lt;-</span> </span>
+<span id="cb216-2"><a href="17.html#cb216-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">case_when</span>(</span>
+<span id="cb216-3"><a href="17.html#cb216-3" aria-hidden="true" tabindex="-1"></a>    nhefs<span class="sc">$</span>qsmk <span class="sc">==</span> <span class="dv">0</span> <span class="sc">~</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">mean</span>(nhefs<span class="sc">$</span>qsmk),</span>
+<span id="cb216-4"><a href="17.html#cb216-4" aria-hidden="true" tabindex="-1"></a>    nhefs<span class="sc">$</span>qsmk <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="fu">mean</span>(nhefs<span class="sc">$</span>qsmk),</span>
+<span id="cb216-5"><a href="17.html#cb216-5" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">NA_real_</span></span>
+<span id="cb216-6"><a href="17.html#cb216-6" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb216-7"><a href="17.html#cb216-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb216-8"><a href="17.html#cb216-8" aria-hidden="true" tabindex="-1"></a>fit_denominator <span class="ot">&lt;-</span> </span>
+<span id="cb216-9"><a href="17.html#cb216-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glm</span>(</span>
+<span id="cb216-10"><a href="17.html#cb216-10" aria-hidden="true" tabindex="-1"></a>    qsmk <span class="sc">~</span> sex <span class="sc">+</span> <span class="fu">poly</span>(age, <span class="dv">2</span>) <span class="sc">+</span> race <span class="sc">+</span> education <span class="sc">+</span> <span class="fu">poly</span>(wt71, <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb216-11"><a href="17.html#cb216-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">poly</span>(smokeintensity, <span class="dv">2</span>) <span class="sc">+</span> <span class="fu">poly</span>(smokeyrs, <span class="dv">2</span>) <span class="sc">+</span> active <span class="sc">+</span> exercise,</span>
+<span id="cb216-12"><a href="17.html#cb216-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> <span class="fu">binomial</span>(),</span>
+<span id="cb216-13"><a href="17.html#cb216-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> nhefs</span>
+<span id="cb216-14"><a href="17.html#cb216-14" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb216-15"><a href="17.html#cb216-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb216-16"><a href="17.html#cb216-16" aria-hidden="true" tabindex="-1"></a>ip_denominator <span class="ot">&lt;-</span> </span>
+<span id="cb216-17"><a href="17.html#cb216-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">case_when</span>(</span>
+<span id="cb216-18"><a href="17.html#cb216-18" aria-hidden="true" tabindex="-1"></a>    nhefs<span class="sc">$</span>qsmk <span class="sc">==</span> <span class="dv">0</span> <span class="sc">~</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">predict</span>(fit_denominator, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>),</span>
+<span id="cb216-19"><a href="17.html#cb216-19" aria-hidden="true" tabindex="-1"></a>    nhefs<span class="sc">$</span>qsmk <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="fu">predict</span>(fit_denominator, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>),</span>
+<span id="cb216-20"><a href="17.html#cb216-20" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">NA_real_</span></span>
+<span id="cb216-21"><a href="17.html#cb216-21" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb216-22"><a href="17.html#cb216-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb216-23"><a href="17.html#cb216-23" aria-hidden="true" tabindex="-1"></a>ip_sw_a <span class="ot">&lt;-</span> ip_numerator <span class="sc">/</span> ip_denominator</span>
+<span id="cb216-24"><a href="17.html#cb216-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb216-25"><a href="17.html#cb216-25" aria-hidden="true" tabindex="-1"></a><span class="fu">kable_summary</span>(ip_sw_a)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+min
+</th>
+<th style="text-align:right;">
+mean
+</th>
+<th style="text-align:right;">
+max
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+0.33
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+4.21
+</td>
+</tr>
+</tbody>
+</table>
+<p>NHEFS dataset with weights in person-time format.</p>
+<div class="sourceCode" id="cb217"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb217-1"><a href="17.html#cb217-1" aria-hidden="true" tabindex="-1"></a>nhefs_pt <span class="ot">&lt;-</span> </span>
+<span id="cb217-2"><a href="17.html#cb217-2" aria-hidden="true" tabindex="-1"></a>  nhefs <span class="sc">%&gt;%</span> </span>
+<span id="cb217-3"><a href="17.html#cb217-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(seqn, qsmk, <span class="at">weight =</span> ip_sw_a, death, time_death) <span class="sc">%&gt;%</span> </span>
+<span id="cb217-4"><a href="17.html#cb217-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb217-5"><a href="17.html#cb217-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">time_event =</span> <span class="fu">list</span>(<span class="fu">time_event</span>(death, time_death))) <span class="sc">%&gt;%</span> </span>
+<span id="cb217-6"><a href="17.html#cb217-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(time_event)</span></code></pre></div>
+<p>Fit logistic regression for hazards.</p>
+<div class="sourceCode" id="cb218"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb218-1"><a href="17.html#cb218-1" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> </span>
+<span id="cb218-2"><a href="17.html#cb218-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glm</span>(</span>
+<span id="cb218-3"><a href="17.html#cb218-3" aria-hidden="true" tabindex="-1"></a>    event <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>) <span class="sc">+</span> qsmk <span class="sc">*</span> <span class="fu">poly</span>(time, <span class="dv">2</span>),</span>
+<span id="cb218-4"><a href="17.html#cb218-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> <span class="fu">binomial</span>(),</span>
+<span id="cb218-5"><a href="17.html#cb218-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> nhefs_pt,</span>
+<span id="cb218-6"><a href="17.html#cb218-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">weights =</span> weight</span>
+<span id="cb218-7"><a href="17.html#cb218-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb218-8"><a href="17.html#cb218-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb218-9"><a href="17.html#cb218-9" aria-hidden="true" tabindex="-1"></a>broom<span class="sc">::</span><span class="fu">tidy</span>(fit)</span></code></pre></div>
+<pre><code>#&gt; # A tibble: 6 × 5
+#&gt;   term                estimate std.error statistic p.value
+#&gt;   &lt;chr&gt;                  &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+#&gt; 1 (Intercept)          -6.34      0.0669   -94.8    0     
+#&gt; 2 poly(time, 2)1       73.4      29.5        2.49   0.0128
+#&gt; 3 poly(time, 2)2      -53.2      28.8       -1.85   0.0649
+#&gt; 4 qsmk                 -0.0351    0.135     -0.261  0.794 
+#&gt; 5 poly(time, 2)1:qsmk -82.8      62.0       -1.34   0.181 
+#&gt; 6 poly(time, 2)2:qsmk -94.7      60.9       -1.56   0.120</code></pre>
+<p>Figure 17.6.</p>
+<div class="sourceCode" id="cb220"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb220-1"><a href="17.html#cb220-1" aria-hidden="true" tabindex="-1"></a>survival_3 <span class="ot">&lt;-</span> <span class="fu">survival</span>(fit)</span>
+<span id="cb220-2"><a href="17.html#cb220-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb220-3"><a href="17.html#cb220-3" aria-hidden="true" tabindex="-1"></a>survival_3 <span class="sc">%&gt;%</span> </span>
+<span id="cb220-4"><a href="17.html#cb220-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(time, survival, <span class="at">color =</span> <span class="fu">as.factor</span>(qsmk))) <span class="sc">+</span></span>
+<span id="cb220-5"><a href="17.html#cb220-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb220-6"><a href="17.html#cb220-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">survival_plot_details</span>(<span class="at">y_quitters =</span> <span class="fl">0.78</span>) <span class="sc">+</span></span>
+<span id="cb220-7"><a href="17.html#cb220-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Figure 17.6&quot;</span>)</span></code></pre></div>
+<p><img src="17_files/figure-html/unnamed-chunk-24-1.png" width="100%" /></p>
+<p>Superposition of Figures 17.4 and 17.6.</p>
+<div class="sourceCode" id="cb221"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb221-1"><a href="17.html#cb221-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(time, survival)) <span class="sc">+</span></span>
+<span id="cb221-2"><a href="17.html#cb221-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">group =</span> qsmk), <span class="at">data =</span> survival_2, <span class="at">color =</span> <span class="st">&quot;grey60&quot;</span>) <span class="sc">+</span></span>
+<span id="cb221-3"><a href="17.html#cb221-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">color =</span> <span class="fu">as.factor</span>(qsmk)), <span class="at">data =</span> survival_3) <span class="sc">+</span></span>
+<span id="cb221-4"><a href="17.html#cb221-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">survival_plot_details</span>() <span class="sc">+</span> </span>
+<span id="cb221-5"><a href="17.html#cb221-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Superposition of Figures 17.4 and 17.6&quot;</span>)</span></code></pre></div>
+<p><img src="17_files/figure-html/unnamed-chunk-25-1.png" width="100%" /></p>
+<p>Survival at 120 months.</p>
+<div class="sourceCode" id="cb222"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb222-1"><a href="17.html#cb222-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> </span>
+<span id="cb222-2"><a href="17.html#cb222-2" aria-hidden="true" tabindex="-1"></a>  survival_3 <span class="sc">%&gt;%</span> </span>
+<span id="cb222-3"><a href="17.html#cb222-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(time <span class="sc">==</span> <span class="dv">120</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb222-4"><a href="17.html#cb222-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(qsmk, survival)</span>
+<span id="cb222-5"><a href="17.html#cb222-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb222-6"><a href="17.html#cb222-6" aria-hidden="true" tabindex="-1"></a>v <span class="sc">%&gt;%</span> </span>
+<span id="cb222-7"><a href="17.html#cb222-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">cols =</span> survival, <span class="at">nsmall =</span> <span class="dv">3</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+qsmk
+</th>
+<th style="text-align:right;">
+survival
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0.805
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.807
+</td>
+</tr>
+</tbody>
+</table>
+<p>Survival at 120 months was 80.5% among non-quitters and 80.7% among quitters for a difference of 0.2%.</p>
+<p>Calculate survival difference at 120 months and the largest absolute value of the differences for all months. If <code>boot = TRUE</code> (the default), use bootstrap sample of data. If <code>boot = FALSE</code>, use full dataset.</p>
+<div class="sourceCode" id="cb223"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb223-1"><a href="17.html#cb223-1" aria-hidden="true" tabindex="-1"></a>survival_diff <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">boot =</span> <span class="cn">TRUE</span>) {</span>
+<span id="cb223-2"><a href="17.html#cb223-2" aria-hidden="true" tabindex="-1"></a>  data <span class="ot">&lt;-</span></span>
+<span id="cb223-3"><a href="17.html#cb223-3" aria-hidden="true" tabindex="-1"></a>    nhefs <span class="sc">%&gt;%</span></span>
+<span id="cb223-4"><a href="17.html#cb223-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">transmute</span>(seqn, qsmk, <span class="at">weight =</span> ip_sw_a, death, time_death) <span class="sc">%&gt;%</span></span>
+<span id="cb223-5"><a href="17.html#cb223-5" aria-hidden="true" tabindex="-1"></a>    {</span>
+<span id="cb223-6"><a href="17.html#cb223-6" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (<span class="fu">isTRUE</span>(boot)) {</span>
+<span id="cb223-7"><a href="17.html#cb223-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">slice_sample</span>(., <span class="at">prop =</span> <span class="dv">1</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb223-8"><a href="17.html#cb223-8" aria-hidden="true" tabindex="-1"></a>      } <span class="cf">else</span> {</span>
+<span id="cb223-9"><a href="17.html#cb223-9" aria-hidden="true" tabindex="-1"></a>        .</span>
+<span id="cb223-10"><a href="17.html#cb223-10" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb223-11"><a href="17.html#cb223-11" aria-hidden="true" tabindex="-1"></a>    } <span class="sc">%&gt;%</span></span>
+<span id="cb223-12"><a href="17.html#cb223-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rowwise</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb223-13"><a href="17.html#cb223-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">time_event =</span> <span class="fu">list</span>(<span class="fu">time_event</span>(death, time_death))) <span class="sc">%&gt;%</span></span>
+<span id="cb223-14"><a href="17.html#cb223-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unnest</span>(time_event)</span>
+<span id="cb223-15"><a href="17.html#cb223-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb223-16"><a href="17.html#cb223-16" aria-hidden="true" tabindex="-1"></a>  fit <span class="ot">&lt;-</span></span>
+<span id="cb223-17"><a href="17.html#cb223-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">glm</span>(</span>
+<span id="cb223-18"><a href="17.html#cb223-18" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>) <span class="sc">+</span> qsmk <span class="sc">*</span> <span class="fu">poly</span>(time, <span class="dv">2</span>),</span>
+<span id="cb223-19"><a href="17.html#cb223-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">family =</span> <span class="fu">binomial</span>(),</span>
+<span id="cb223-20"><a href="17.html#cb223-20" aria-hidden="true" tabindex="-1"></a>      <span class="at">data =</span> data,</span>
+<span id="cb223-21"><a href="17.html#cb223-21" aria-hidden="true" tabindex="-1"></a>      <span class="at">weights =</span> weight</span>
+<span id="cb223-22"><a href="17.html#cb223-22" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb223-23"><a href="17.html#cb223-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb223-24"><a href="17.html#cb223-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">survival</span>(fit) <span class="sc">%&gt;%</span> </span>
+<span id="cb223-25"><a href="17.html#cb223-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(time) <span class="sc">%&gt;%</span></span>
+<span id="cb223-26"><a href="17.html#cb223-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">diff =</span> survival[qsmk <span class="sc">==</span> <span class="dv">1</span>] <span class="sc">-</span> survival[qsmk <span class="sc">==</span> <span class="dv">0</span>]) <span class="sc">%&gt;%</span></span>
+<span id="cb223-27"><a href="17.html#cb223-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(</span>
+<span id="cb223-28"><a href="17.html#cb223-28" aria-hidden="true" tabindex="-1"></a>      <span class="at">last =</span> <span class="fu">last</span>(diff),</span>
+<span id="cb223-29"><a href="17.html#cb223-29" aria-hidden="true" tabindex="-1"></a>      <span class="at">max =</span> <span class="fu">max</span>(<span class="fu">abs</span>(diff))</span>
+<span id="cb223-30"><a href="17.html#cb223-30" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb223-31"><a href="17.html#cb223-31" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Perform bootstrap resampling.</p>
+<div class="sourceCode" id="cb224"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb224-1"><a href="17.html#cb224-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">231</span>)</span>
+<span id="cb224-2"><a href="17.html#cb224-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb224-3"><a href="17.html#cb224-3" aria-hidden="true" tabindex="-1"></a>n_boot <span class="ot">&lt;-</span> <span class="dv">500</span></span>
+<span id="cb224-4"><a href="17.html#cb224-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb224-5"><a href="17.html#cb224-5" aria-hidden="true" tabindex="-1"></a>boot_out <span class="ot">&lt;-</span></span>
+<span id="cb224-6"><a href="17.html#cb224-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">seq_len</span>(n_boot) <span class="sc">%&gt;%</span></span>
+<span id="cb224-7"><a href="17.html#cb224-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(<span class="sc">~</span> <span class="fu">survival_diff</span>())</span></code></pre></div>
+<p>Survival difference at 120 months with 95% confidence interval calculated using bootstrap percentile method.</p>
+<div class="sourceCode" id="cb225"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb225-1"><a href="17.html#cb225-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span></span>
+<span id="cb225-2"><a href="17.html#cb225-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
+<span id="cb225-3"><a href="17.html#cb225-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">estimate =</span> <span class="fu">survival_diff</span>(<span class="at">boot =</span> <span class="cn">FALSE</span>)<span class="sc">$</span>last,</span>
+<span id="cb225-4"><a href="17.html#cb225-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">conf_low =</span> <span class="fu">quantile</span>(boot_out<span class="sc">$</span>last, <span class="at">probs =</span> <span class="fl">0.025</span>),</span>
+<span id="cb225-5"><a href="17.html#cb225-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">conf_high =</span> <span class="fu">quantile</span>(boot_out<span class="sc">$</span>last, <span class="at">probs =</span> <span class="fl">0.975</span>)</span>
+<span id="cb225-6"><a href="17.html#cb225-6" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb225-7"><a href="17.html#cb225-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb225-8"><a href="17.html#cb225-8" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(v, <span class="at">nsmall =</span> <span class="dv">3</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+estimate
+</th>
+<th style="text-align:right;">
+conf_low
+</th>
+<th style="text-align:right;">
+conf_high
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+0.002
+</td>
+<td style="text-align:right;">
+-0.046
+</td>
+<td style="text-align:right;">
+0.046
+</td>
+</tr>
+</tbody>
+</table>
+<p>The survival difference at 120 months was 0.2% with a 95% confidence interval from -4.6% to 4.6% based on 500 bootstrap samples.</p>
+<p>The largest absolute value of the differences for all months with 95% confidence interval calculated using bootstrap percentile method. Note that this a different measure than the one used in the book.</p>
+<div class="sourceCode" id="cb226"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb226-1"><a href="17.html#cb226-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span></span>
+<span id="cb226-2"><a href="17.html#cb226-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
+<span id="cb226-3"><a href="17.html#cb226-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">estimate =</span> <span class="fu">survival_diff</span>(<span class="at">boot =</span> <span class="cn">FALSE</span>)<span class="sc">$</span>max,</span>
+<span id="cb226-4"><a href="17.html#cb226-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">conf_low =</span> <span class="fu">quantile</span>(boot_out<span class="sc">$</span>max, <span class="at">probs =</span> <span class="fl">0.025</span>),</span>
+<span id="cb226-5"><a href="17.html#cb226-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">conf_high =</span> <span class="fu">quantile</span>(boot_out<span class="sc">$</span>max, <span class="at">probs =</span> <span class="fl">0.975</span>)</span>
+<span id="cb226-6"><a href="17.html#cb226-6" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb226-7"><a href="17.html#cb226-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb226-8"><a href="17.html#cb226-8" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(v, <span class="at">nsmall =</span> <span class="dv">3</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+estimate
+</th>
+<th style="text-align:right;">
+conf_low
+</th>
+<th style="text-align:right;">
+conf_high
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+0.019
+</td>
+<td style="text-align:right;">
+0.009
+</td>
+<td style="text-align:right;">
+0.060
+</td>
+</tr>
+</tbody>
+</table>
+<p>The largest absolute value of the differences for all months was 1.9% with a 95% confidence interval from 0.9% to 6.0% based on 500 bootstrap samples.</p>
+</div>
+<div id="the-parametric-g-formula" class="section level2 unnumbered hasAnchor">
+<h2>17.5 The parametric g-formula<a href="17.html#the-parametric-g-formula" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>NHEFS dataset in person-time format.</p>
+<div class="sourceCode" id="cb227"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb227-1"><a href="17.html#cb227-1" aria-hidden="true" tabindex="-1"></a>nhefs_pt <span class="ot">&lt;-</span></span>
+<span id="cb227-2"><a href="17.html#cb227-2" aria-hidden="true" tabindex="-1"></a>  nhefs <span class="sc">%&gt;%</span></span>
+<span id="cb227-3"><a href="17.html#cb227-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(</span>
+<span id="cb227-4"><a href="17.html#cb227-4" aria-hidden="true" tabindex="-1"></a>    qsmk, death, sex, age, race, education, wt71, smokeintensity,</span>
+<span id="cb227-5"><a href="17.html#cb227-5" aria-hidden="true" tabindex="-1"></a>    smkintensity82_71, smokeyrs, active, exercise, time_death</span>
+<span id="cb227-6"><a href="17.html#cb227-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb227-7"><a href="17.html#cb227-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb227-8"><a href="17.html#cb227-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">time_event =</span> <span class="fu">list</span>(<span class="fu">time_event</span>(death, time_death))) <span class="sc">%&gt;%</span></span>
+<span id="cb227-9"><a href="17.html#cb227-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(time_event)</span></code></pre></div>
+<p>Fit logistic regression for hazards.</p>
+<div class="sourceCode" id="cb228"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb228-1"><a href="17.html#cb228-1" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span></span>
+<span id="cb228-2"><a href="17.html#cb228-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glm</span>(</span>
+<span id="cb228-3"><a href="17.html#cb228-3" aria-hidden="true" tabindex="-1"></a>    event <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>) <span class="sc">+</span> qsmk <span class="sc">*</span> <span class="fu">poly</span>(time, <span class="dv">2</span>) <span class="sc">+</span> sex <span class="sc">+</span> <span class="fu">poly</span>(age, <span class="dv">2</span>) <span class="sc">+</span> race <span class="sc">+</span></span>
+<span id="cb228-4"><a href="17.html#cb228-4" aria-hidden="true" tabindex="-1"></a>      education <span class="sc">+</span> <span class="fu">poly</span>(wt71, <span class="dv">2</span>) <span class="sc">+</span> <span class="fu">poly</span>(smokeintensity, <span class="dv">2</span>) <span class="sc">+</span> smkintensity82_71 <span class="sc">+</span></span>
+<span id="cb228-5"><a href="17.html#cb228-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">poly</span>(smokeyrs, <span class="dv">2</span>) <span class="sc">+</span> active <span class="sc">+</span> exercise,</span>
+<span id="cb228-6"><a href="17.html#cb228-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> <span class="fu">binomial</span>(),</span>
+<span id="cb228-7"><a href="17.html#cb228-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> nhefs_pt</span>
+<span id="cb228-8"><a href="17.html#cb228-8" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb228-9"><a href="17.html#cb228-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb228-10"><a href="17.html#cb228-10" aria-hidden="true" tabindex="-1"></a>broom<span class="sc">::</span><span class="fu">tidy</span>(fit)</span></code></pre></div>
+<pre><code>#&gt; # A tibble: 25 × 5
+#&gt;    term           estimate std.error statistic   p.value
+#&gt;    &lt;chr&gt;             &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+#&gt;  1 (Intercept)     -6.70       0.199   -33.7   3.14e-249
+#&gt;  2 poly(time, 2)1 130.        31.2       4.16  3.13e-  5
+#&gt;  3 poly(time, 2)2 -52.9       30.2      -1.75  8.00e-  2
+#&gt;  4 qsmk             0.0296     0.179     0.165 8.69e-  1
+#&gt;  5 sex1            -0.437      0.141    -3.10  1.93e-  3
+#&gt;  6 poly(age, 2)1  392.        64.7       6.06  1.38e-  9
+#&gt;  7 poly(age, 2)2   -4.86      32.7      -0.149 8.82e-  1
+#&gt;  8 race1            0.0524     0.173     0.302 7.63e-  1
+#&gt;  9 education2      -0.140      0.157    -0.895 3.71e-  1
+#&gt; 10 education3      -0.433      0.153    -2.84  4.50e-  3
+#&gt; # … with 15 more rows
+#&gt; # ℹ Use `print(n = ...)` to see more rows</code></pre>
+<p>Calculate survival curve for individual.</p>
+<div class="sourceCode" id="cb230"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb230-1"><a href="17.html#cb230-1" aria-hidden="true" tabindex="-1"></a>time_survival <span class="ot">&lt;-</span> <span class="cf">function</span>(fit, data, qsmk) {</span>
+<span id="cb230-2"><a href="17.html#cb230-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
+<span id="cb230-3"><a href="17.html#cb230-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">time =</span> <span class="dv">0</span><span class="sc">:</span>time_max,</span>
+<span id="cb230-4"><a href="17.html#cb230-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">survival =</span></span>
+<span id="cb230-5"><a href="17.html#cb230-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cumprod</span>(</span>
+<span id="cb230-6"><a href="17.html#cb230-6" aria-hidden="true" tabindex="-1"></a>        <span class="dv">1</span> <span class="sc">-</span> <span class="fu">predict</span>(fit, <span class="at">newdata =</span> <span class="fu">tibble</span>(data, qsmk, time), <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb230-7"><a href="17.html#cb230-7" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">%&gt;%</span></span>
+<span id="cb230-8"><a href="17.html#cb230-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">lag</span>(<span class="at">default =</span> <span class="dv">1</span>)</span>
+<span id="cb230-9"><a href="17.html#cb230-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb230-10"><a href="17.html#cb230-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Calculate survival curves for each individual and then average.</p>
+<div class="sourceCode" id="cb231"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb231-1"><a href="17.html#cb231-1" aria-hidden="true" tabindex="-1"></a>survival_4 <span class="ot">&lt;-</span></span>
+<span id="cb231-2"><a href="17.html#cb231-2" aria-hidden="true" tabindex="-1"></a>  nhefs <span class="sc">%&gt;%</span></span>
+<span id="cb231-3"><a href="17.html#cb231-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(</span>
+<span id="cb231-4"><a href="17.html#cb231-4" aria-hidden="true" tabindex="-1"></a>    seqn, sex, age, race, education, wt71, smokeintensity, smkintensity82_71,</span>
+<span id="cb231-5"><a href="17.html#cb231-5" aria-hidden="true" tabindex="-1"></a>    smokeyrs, active, exercise</span>
+<span id="cb231-6"><a href="17.html#cb231-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb231-7"><a href="17.html#cb231-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">expand_grid</span>(<span class="at">qsmk =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb231-8"><a href="17.html#cb231-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest</span>(<span class="at">data =</span> <span class="sc">!</span><span class="fu">c</span>(seqn, qsmk)) <span class="sc">%&gt;%</span></span>
+<span id="cb231-9"><a href="17.html#cb231-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb231-10"><a href="17.html#cb231-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(</span>
+<span id="cb231-11"><a href="17.html#cb231-11" aria-hidden="true" tabindex="-1"></a>    qsmk,</span>
+<span id="cb231-12"><a href="17.html#cb231-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">time_survival =</span> <span class="fu">list</span>(<span class="fu">time_survival</span>(<span class="at">fit =</span> fit, <span class="at">data =</span> data, <span class="at">qsmk =</span> qsmk))</span>
+<span id="cb231-13"><a href="17.html#cb231-13" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb231-14"><a href="17.html#cb231-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(time_survival) <span class="sc">%&gt;%</span></span>
+<span id="cb231-15"><a href="17.html#cb231-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(qsmk, time) <span class="sc">%&gt;%</span></span>
+<span id="cb231-16"><a href="17.html#cb231-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">across</span>(survival, mean)) <span class="sc">%&gt;%</span></span>
+<span id="cb231-17"><a href="17.html#cb231-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code></pre></div>
+<p>Figure 17.7.</p>
+<div class="sourceCode" id="cb232"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb232-1"><a href="17.html#cb232-1" aria-hidden="true" tabindex="-1"></a>survival_4 <span class="sc">%&gt;%</span></span>
+<span id="cb232-2"><a href="17.html#cb232-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(time, survival, <span class="at">color =</span> <span class="fu">as.factor</span>(qsmk))) <span class="sc">+</span></span>
+<span id="cb232-3"><a href="17.html#cb232-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb232-4"><a href="17.html#cb232-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">survival_plot_details</span>(<span class="at">y_quitters =</span> <span class="fl">0.78</span>) <span class="sc">+</span></span>
+<span id="cb232-5"><a href="17.html#cb232-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Figure 17.7&quot;</span>)</span></code></pre></div>
+<p><img src="17_files/figure-html/unnamed-chunk-35-1.png" width="100%" /></p>
+<p>Superposition of Figures 17.6 and 17.7.</p>
+<div class="sourceCode" id="cb233"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb233-1"><a href="17.html#cb233-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(time, survival)) <span class="sc">+</span></span>
+<span id="cb233-2"><a href="17.html#cb233-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">group =</span> qsmk), <span class="at">data =</span> survival_3, <span class="at">color =</span> <span class="st">&quot;grey60&quot;</span>) <span class="sc">+</span></span>
+<span id="cb233-3"><a href="17.html#cb233-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">color =</span> <span class="fu">as.factor</span>(qsmk)), <span class="at">data =</span> survival_4) <span class="sc">+</span></span>
+<span id="cb233-4"><a href="17.html#cb233-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">survival_plot_details</span>(<span class="at">y_quitters =</span> <span class="fl">0.78</span>) <span class="sc">+</span></span>
+<span id="cb233-5"><a href="17.html#cb233-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Superposition of Figures 17.6 and 17.7&quot;</span>)</span></code></pre></div>
+<p><img src="17_files/figure-html/unnamed-chunk-36-1.png" width="100%" /></p>
+<p>The survival curves from the two figures are coincident.</p>
+<p>Survival at 120 months.</p>
+<div class="sourceCode" id="cb234"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb234-1"><a href="17.html#cb234-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span></span>
+<span id="cb234-2"><a href="17.html#cb234-2" aria-hidden="true" tabindex="-1"></a>  survival_4 <span class="sc">%&gt;%</span></span>
+<span id="cb234-3"><a href="17.html#cb234-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(time <span class="sc">==</span> <span class="dv">120</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb234-4"><a href="17.html#cb234-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(qsmk, survival)</span>
+<span id="cb234-5"><a href="17.html#cb234-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb234-6"><a href="17.html#cb234-6" aria-hidden="true" tabindex="-1"></a>v <span class="sc">%&gt;%</span></span>
+<span id="cb234-7"><a href="17.html#cb234-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">cols =</span> survival, <span class="at">nsmall =</span> <span class="dv">3</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+qsmk
+</th>
+<th style="text-align:right;">
+survival
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0.806
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.804
+</td>
+</tr>
+</tbody>
+</table>
+<p>Survival at 120 months was 80.6% among non-quitters and 80.4% among quitters for a difference of -0.3% (rounded from -0.253%).</p>
+<p>Calculate survival difference at 120 months and the largest absolute value of the differences for all months. If <code>boot = TRUE</code> (the default), use bootstrap sample of data. If <code>boot = FALSE</code>, use full dataset.</p>
+<div class="sourceCode" id="cb235"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb235-1"><a href="17.html#cb235-1" aria-hidden="true" tabindex="-1"></a>survival_diff <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">boot =</span> <span class="cn">TRUE</span>) {</span>
+<span id="cb235-2"><a href="17.html#cb235-2" aria-hidden="true" tabindex="-1"></a>  v <span class="ot">&lt;-</span></span>
+<span id="cb235-3"><a href="17.html#cb235-3" aria-hidden="true" tabindex="-1"></a>    nhefs <span class="sc">%&gt;%</span></span>
+<span id="cb235-4"><a href="17.html#cb235-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(</span>
+<span id="cb235-5"><a href="17.html#cb235-5" aria-hidden="true" tabindex="-1"></a>      qsmk, death, sex, age, race, education, wt71, smokeintensity,</span>
+<span id="cb235-6"><a href="17.html#cb235-6" aria-hidden="true" tabindex="-1"></a>      smkintensity82_71, smokeyrs, active, exercise, time_death</span>
+<span id="cb235-7"><a href="17.html#cb235-7" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="cb235-8"><a href="17.html#cb235-8" aria-hidden="true" tabindex="-1"></a>    {</span>
+<span id="cb235-9"><a href="17.html#cb235-9" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (<span class="fu">isTRUE</span>(boot)) {</span>
+<span id="cb235-10"><a href="17.html#cb235-10" aria-hidden="true" tabindex="-1"></a>        <span class="fu">slice_sample</span>(., <span class="at">prop =</span> <span class="dv">1</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb235-11"><a href="17.html#cb235-11" aria-hidden="true" tabindex="-1"></a>      } <span class="cf">else</span> {</span>
+<span id="cb235-12"><a href="17.html#cb235-12" aria-hidden="true" tabindex="-1"></a>        .</span>
+<span id="cb235-13"><a href="17.html#cb235-13" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb235-14"><a href="17.html#cb235-14" aria-hidden="true" tabindex="-1"></a>    } <span class="sc">%&gt;%</span></span>
+<span id="cb235-15"><a href="17.html#cb235-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">row =</span> <span class="fu">row_number</span>())</span>
+<span id="cb235-16"><a href="17.html#cb235-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb235-17"><a href="17.html#cb235-17" aria-hidden="true" tabindex="-1"></a>  data <span class="ot">&lt;-</span></span>
+<span id="cb235-18"><a href="17.html#cb235-18" aria-hidden="true" tabindex="-1"></a>    v <span class="sc">%&gt;%</span></span>
+<span id="cb235-19"><a href="17.html#cb235-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rowwise</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb235-20"><a href="17.html#cb235-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">time_event =</span> <span class="fu">list</span>(<span class="fu">time_event</span>(death, time_death))) <span class="sc">%&gt;%</span></span>
+<span id="cb235-21"><a href="17.html#cb235-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unnest</span>(time_event)</span>
+<span id="cb235-22"><a href="17.html#cb235-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb235-23"><a href="17.html#cb235-23" aria-hidden="true" tabindex="-1"></a>  fit <span class="ot">&lt;-</span></span>
+<span id="cb235-24"><a href="17.html#cb235-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">glm</span>(</span>
+<span id="cb235-25"><a href="17.html#cb235-25" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>) <span class="sc">+</span> qsmk <span class="sc">*</span> <span class="fu">poly</span>(time, <span class="dv">2</span>) <span class="sc">+</span> sex <span class="sc">+</span> <span class="fu">poly</span>(age, <span class="dv">2</span>) <span class="sc">+</span> race <span class="sc">+</span></span>
+<span id="cb235-26"><a href="17.html#cb235-26" aria-hidden="true" tabindex="-1"></a>        education <span class="sc">+</span> <span class="fu">poly</span>(wt71, <span class="dv">2</span>) <span class="sc">+</span> <span class="fu">poly</span>(smokeintensity, <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb235-27"><a href="17.html#cb235-27" aria-hidden="true" tabindex="-1"></a>        smkintensity82_71 <span class="sc">+</span> <span class="fu">poly</span>(smokeyrs, <span class="dv">2</span>) <span class="sc">+</span> active <span class="sc">+</span> exercise,</span>
+<span id="cb235-28"><a href="17.html#cb235-28" aria-hidden="true" tabindex="-1"></a>      <span class="at">family =</span> <span class="fu">binomial</span>(),</span>
+<span id="cb235-29"><a href="17.html#cb235-29" aria-hidden="true" tabindex="-1"></a>      <span class="at">data =</span> data</span>
+<span id="cb235-30"><a href="17.html#cb235-30" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb235-31"><a href="17.html#cb235-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb235-32"><a href="17.html#cb235-32" aria-hidden="true" tabindex="-1"></a>  v <span class="sc">%&gt;%</span></span>
+<span id="cb235-33"><a href="17.html#cb235-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">!</span><span class="fu">c</span>(qsmk, death, time_death)) <span class="sc">%&gt;%</span></span>
+<span id="cb235-34"><a href="17.html#cb235-34" aria-hidden="true" tabindex="-1"></a>    <span class="fu">expand_grid</span>(<span class="at">qsmk =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb235-35"><a href="17.html#cb235-35" aria-hidden="true" tabindex="-1"></a>    <span class="fu">nest</span>(<span class="at">data =</span> <span class="sc">!</span><span class="fu">c</span>(row, qsmk)) <span class="sc">%&gt;%</span></span>
+<span id="cb235-36"><a href="17.html#cb235-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rowwise</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb235-37"><a href="17.html#cb235-37" aria-hidden="true" tabindex="-1"></a>    <span class="fu">transmute</span>(</span>
+<span id="cb235-38"><a href="17.html#cb235-38" aria-hidden="true" tabindex="-1"></a>      qsmk,</span>
+<span id="cb235-39"><a href="17.html#cb235-39" aria-hidden="true" tabindex="-1"></a>      <span class="at">time_survival =</span> <span class="fu">list</span>(<span class="fu">time_survival</span>(<span class="at">fit =</span> fit, <span class="at">data =</span> data, <span class="at">qsmk =</span> qsmk))</span>
+<span id="cb235-40"><a href="17.html#cb235-40" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="cb235-41"><a href="17.html#cb235-41" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unnest</span>(time_survival) <span class="sc">%&gt;%</span></span>
+<span id="cb235-42"><a href="17.html#cb235-42" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(qsmk, time) <span class="sc">%&gt;%</span></span>
+<span id="cb235-43"><a href="17.html#cb235-43" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="fu">across</span>(survival, mean)) <span class="sc">%&gt;%</span></span>
+<span id="cb235-44"><a href="17.html#cb235-44" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb235-45"><a href="17.html#cb235-45" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(time) <span class="sc">%&gt;%</span></span>
+<span id="cb235-46"><a href="17.html#cb235-46" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">diff =</span> survival[qsmk <span class="sc">==</span> <span class="dv">1</span>] <span class="sc">-</span> survival[qsmk <span class="sc">==</span> <span class="dv">0</span>]) <span class="sc">%&gt;%</span></span>
+<span id="cb235-47"><a href="17.html#cb235-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(</span>
+<span id="cb235-48"><a href="17.html#cb235-48" aria-hidden="true" tabindex="-1"></a>      <span class="at">last =</span> <span class="fu">last</span>(diff),</span>
+<span id="cb235-49"><a href="17.html#cb235-49" aria-hidden="true" tabindex="-1"></a>      <span class="at">max =</span> <span class="fu">max</span>(<span class="fu">abs</span>(diff))</span>
+<span id="cb235-50"><a href="17.html#cb235-50" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb235-51"><a href="17.html#cb235-51" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Perform bootstrap resampling.</p>
+<div class="sourceCode" id="cb236"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb236-1"><a href="17.html#cb236-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">231</span>)</span>
+<span id="cb236-2"><a href="17.html#cb236-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb236-3"><a href="17.html#cb236-3" aria-hidden="true" tabindex="-1"></a>n_boot <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb236-4"><a href="17.html#cb236-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb236-5"><a href="17.html#cb236-5" aria-hidden="true" tabindex="-1"></a>boot_out <span class="ot">&lt;-</span></span>
+<span id="cb236-6"><a href="17.html#cb236-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">seq_len</span>(n_boot) <span class="sc">%&gt;%</span></span>
+<span id="cb236-7"><a href="17.html#cb236-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(<span class="sc">~</span> <span class="fu">survival_diff</span>())</span></code></pre></div>
+<p>Survival difference at 120 months with 95% confidence interval calculated using bootstrap percentile method.</p>
+<div class="sourceCode" id="cb237"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb237-1"><a href="17.html#cb237-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span></span>
+<span id="cb237-2"><a href="17.html#cb237-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
+<span id="cb237-3"><a href="17.html#cb237-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">estimate =</span> <span class="fu">survival_diff</span>(<span class="at">boot =</span> <span class="cn">FALSE</span>)<span class="sc">$</span>last,</span>
+<span id="cb237-4"><a href="17.html#cb237-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">conf_low =</span> <span class="fu">quantile</span>(boot_out<span class="sc">$</span>last, <span class="at">probs =</span> <span class="fl">0.025</span>),</span>
+<span id="cb237-5"><a href="17.html#cb237-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">conf_high =</span> <span class="fu">quantile</span>(boot_out<span class="sc">$</span>last, <span class="at">probs =</span> <span class="fl">0.975</span>)</span>
+<span id="cb237-6"><a href="17.html#cb237-6" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb237-7"><a href="17.html#cb237-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb237-8"><a href="17.html#cb237-8" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(v, <span class="at">nsmall =</span> <span class="dv">3</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+estimate
+</th>
+<th style="text-align:right;">
+conf_low
+</th>
+<th style="text-align:right;">
+conf_high
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+-0.003
+</td>
+<td style="text-align:right;">
+-0.046
+</td>
+<td style="text-align:right;">
+0.042
+</td>
+</tr>
+</tbody>
+</table>
+<p>The survival difference at 120 months was -0.3% with a 95% confidence interval from -4.6% to 4.2% based on 100 bootstrap samples.</p>
+<p>The largest absolute value of the differences for all months with 95% confidence interval calculated using bootstrap percentile method. Note that this a different measure than the one used in the book.</p>
+<div class="sourceCode" id="cb238"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb238-1"><a href="17.html#cb238-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span></span>
+<span id="cb238-2"><a href="17.html#cb238-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
+<span id="cb238-3"><a href="17.html#cb238-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">estimate =</span> <span class="fu">survival_diff</span>(<span class="at">boot =</span> <span class="cn">FALSE</span>)<span class="sc">$</span>max,</span>
+<span id="cb238-4"><a href="17.html#cb238-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">conf_low =</span> <span class="fu">quantile</span>(boot_out<span class="sc">$</span>max, <span class="at">probs =</span> <span class="fl">0.025</span>),</span>
+<span id="cb238-5"><a href="17.html#cb238-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">conf_high =</span> <span class="fu">quantile</span>(boot_out<span class="sc">$</span>max, <span class="at">probs =</span> <span class="fl">0.975</span>)</span>
+<span id="cb238-6"><a href="17.html#cb238-6" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb238-7"><a href="17.html#cb238-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb238-8"><a href="17.html#cb238-8" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(v, <span class="at">nsmall =</span> <span class="dv">3</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+estimate
+</th>
+<th style="text-align:right;">
+conf_low
+</th>
+<th style="text-align:right;">
+conf_high
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+0.020
+</td>
+<td style="text-align:right;">
+0.008
+</td>
+<td style="text-align:right;">
+0.057
+</td>
+</tr>
+</tbody>
+</table>
+<p>The largest absolute value of the differences for all months was 2.0% with a 95% confidence interval from 0.8% to 5.7% based on 100 bootstrap samples.</p>
+</div>
+<div id="g-estimation-of-structural-nested-models" class="section level2 unnumbered hasAnchor">
+<h2>17.6 G-estimation of structural nested models<a href="17.html#g-estimation-of-structural-nested-models" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Fit logistic regression for treatment.</p>
+<div class="sourceCode" id="cb239"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb239-1"><a href="17.html#cb239-1" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> </span>
+<span id="cb239-2"><a href="17.html#cb239-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glm</span>(</span>
+<span id="cb239-3"><a href="17.html#cb239-3" aria-hidden="true" tabindex="-1"></a>    qsmk <span class="sc">~</span> sex <span class="sc">+</span> <span class="fu">poly</span>(age, <span class="dv">2</span>) <span class="sc">+</span> race <span class="sc">+</span> education <span class="sc">+</span> <span class="fu">poly</span>(wt71, <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb239-4"><a href="17.html#cb239-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">poly</span>(smokeintensity, <span class="dv">2</span>) <span class="sc">+</span> <span class="fu">poly</span>(smokeyrs, <span class="dv">2</span>) <span class="sc">+</span> active <span class="sc">+</span> exercise,</span>
+<span id="cb239-5"><a href="17.html#cb239-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> <span class="fu">binomial</span>(),</span>
+<span id="cb239-6"><a href="17.html#cb239-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> nhefs</span>
+<span id="cb239-7"><a href="17.html#cb239-7" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<p>Predict treatment and restrict to individuals who died during follow-up.</p>
+<div class="sourceCode" id="cb240"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb240-1"><a href="17.html#cb240-1" aria-hidden="true" tabindex="-1"></a>nhefs_died <span class="ot">&lt;-</span> </span>
+<span id="cb240-2"><a href="17.html#cb240-2" aria-hidden="true" tabindex="-1"></a>  nhefs <span class="sc">%&gt;%</span> </span>
+<span id="cb240-3"><a href="17.html#cb240-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">qsmk_pred =</span> <span class="fu">predict</span>(fit, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb240-4"><a href="17.html#cb240-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>(time_death) <span class="sc">%&gt;%</span> </span>
+<span id="cb240-5"><a href="17.html#cb240-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(qsmk, time_death, qsmk_pred)</span></code></pre></div>
+<p>For potential counterfactual (<code>psi</code>), calculate score test statistic.</p>
+<div class="sourceCode" id="cb241"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb241-1"><a href="17.html#cb241-1" aria-hidden="true" tabindex="-1"></a>g_est <span class="ot">&lt;-</span> <span class="cf">function</span>(psi) {</span>
+<span id="cb241-2"><a href="17.html#cb241-2" aria-hidden="true" tabindex="-1"></a>  nhefs_died <span class="sc">%&gt;%</span> </span>
+<span id="cb241-3"><a href="17.html#cb241-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb241-4"><a href="17.html#cb241-4" aria-hidden="true" tabindex="-1"></a>      <span class="at">delta =</span></span>
+<span id="cb241-5"><a href="17.html#cb241-5" aria-hidden="true" tabindex="-1"></a>        (qsmk <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> time_death <span class="sc">*</span> <span class="fu">exp</span>(<span class="sc">-</span>psi) <span class="sc">&lt;=</span> time_max) <span class="sc">|</span></span>
+<span id="cb241-6"><a href="17.html#cb241-6" aria-hidden="true" tabindex="-1"></a>        (qsmk <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> time_death <span class="sc">*</span> <span class="fu">exp</span>(psi) <span class="sc">&lt;=</span> time_max),</span>
+<span id="cb241-7"><a href="17.html#cb241-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> delta <span class="sc">*</span> (qsmk <span class="sc">-</span> qsmk_pred)</span>
+<span id="cb241-8"><a href="17.html#cb241-8" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span> </span>
+<span id="cb241-9"><a href="17.html#cb241-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">u =</span> <span class="fu">sum</span>(x)<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> ((<span class="fu">n</span>() <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> <span class="fu">var</span>(x))) <span class="sc">%&gt;%</span>  </span>
+<span id="cb241-10"><a href="17.html#cb241-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pull</span>(u)</span>
+<span id="cb241-11"><a href="17.html#cb241-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>95% quantile of chi-squared distribution with 1 degree of freedom.</p>
+<div class="sourceCode" id="cb242"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb242-1"><a href="17.html#cb242-1" aria-hidden="true" tabindex="-1"></a>q_0<span class="fl">.95</span> <span class="ot">&lt;-</span> <span class="fu">qchisq</span>(<span class="at">p =</span> <span class="fl">0.95</span>, <span class="at">df =</span> <span class="dv">1</span>)</span>
+<span id="cb242-2"><a href="17.html#cb242-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb242-3"><a href="17.html#cb242-3" aria-hidden="true" tabindex="-1"></a>q_0<span class="fl">.95</span></span></code></pre></div>
+<pre><code>#&gt; [1] 3.841459</code></pre>
+<p>Score test statistic as a function of potential counterfactual.</p>
+<div class="sourceCode" id="cb244"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb244-1"><a href="17.html#cb244-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> </span>
+<span id="cb244-2"><a href="17.html#cb244-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
+<span id="cb244-3"><a href="17.html#cb244-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">psi =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.001</span>),</span>
+<span id="cb244-4"><a href="17.html#cb244-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">u =</span> <span class="fu">map_dbl</span>(psi, g_est)</span>
+<span id="cb244-5"><a href="17.html#cb244-5" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb244-6"><a href="17.html#cb244-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb244-7"><a href="17.html#cb244-7" aria-hidden="true" tabindex="-1"></a>v <span class="sc">%&gt;%</span> </span>
+<span id="cb244-8"><a href="17.html#cb244-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(psi, u)) <span class="sc">+</span></span>
+<span id="cb244-9"><a href="17.html#cb244-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb244-10"><a href="17.html#cb244-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> q_0<span class="fl">.95</span>, <span class="at">color =</span> <span class="st">&quot;red&quot;</span>) <span class="sc">+</span></span>
+<span id="cb244-11"><a href="17.html#cb244-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> scales<span class="sc">::</span><span class="fu">breaks_width</span>(<span class="fl">0.1</span>)) <span class="sc">+</span></span>
+<span id="cb244-12"><a href="17.html#cb244-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb244-13"><a href="17.html#cb244-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;Score test statistic as a function of potential counterfactual&quot;</span>,</span>
+<span id="cb244-14"><a href="17.html#cb244-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> </span>
+<span id="cb244-15"><a href="17.html#cb244-15" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;Red line indicates 95% quantile of chi-squared distribution with 1 degree of freedom&quot;</span>,</span>
+<span id="cb244-16"><a href="17.html#cb244-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Potential counterfactual&quot;</span>,</span>
+<span id="cb244-17"><a href="17.html#cb244-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Score test statistic&quot;</span></span>
+<span id="cb244-18"><a href="17.html#cb244-18" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<p><img src="17_files/figure-html/unnamed-chunk-46-1.png" width="100%" /></p>
+<p>The plot appears to be step function, perhaps as a result of individuals being censored depending upon the value of <code>psi</code>.</p>
+<p>The minimum of the plot.</p>
+<div class="sourceCode" id="cb245"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb245-1"><a href="17.html#cb245-1" aria-hidden="true" tabindex="-1"></a>v <span class="sc">%&gt;%</span> </span>
+<span id="cb245-2"><a href="17.html#cb245-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(u <span class="sc">==</span> <span class="fu">min</span>(u))</span></code></pre></div>
+<pre><code>#&gt; # A tibble: 9 × 2
+#&gt;      psi       u
+#&gt;    &lt;dbl&gt;   &lt;dbl&gt;
+#&gt; 1 -0.051 0.00215
+#&gt; 2 -0.05  0.00215
+#&gt; 3 -0.049 0.00215
+#&gt; 4 -0.048 0.00215
+#&gt; 5 -0.047 0.00215
+#&gt; 6 -0.046 0.00215
+#&gt; 7 -0.045 0.00215
+#&gt; 8 -0.044 0.00215
+#&gt; 9 -0.043 0.00215</code></pre>
+<p>All of the values of <code>psi</code> from -0.051 to -0.043 have the same minimum value for the score test statistic. We’ll choose as our estimate the middle of this range.</p>
+<div class="sourceCode" id="cb247"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb247-1"><a href="17.html#cb247-1" aria-hidden="true" tabindex="-1"></a>estimate <span class="ot">&lt;-</span> </span>
+<span id="cb247-2"><a href="17.html#cb247-2" aria-hidden="true" tabindex="-1"></a>  v <span class="sc">%&gt;%</span> </span>
+<span id="cb247-3"><a href="17.html#cb247-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(u <span class="sc">==</span> <span class="fu">min</span>(u)) <span class="sc">%&gt;%</span> </span>
+<span id="cb247-4"><a href="17.html#cb247-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">estimate =</span> <span class="fu">mean</span>(<span class="fu">range</span>(psi)))</span></code></pre></div>
+<p>Calculate 95% confidence interval by finding points where plot crosses the red line.</p>
+<div class="sourceCode" id="cb248"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb248-1"><a href="17.html#cb248-1" aria-hidden="true" tabindex="-1"></a>conf_low <span class="ot">&lt;-</span> </span>
+<span id="cb248-2"><a href="17.html#cb248-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
+<span id="cb248-3"><a href="17.html#cb248-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">psi =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">0.25</span>, <span class="sc">-</span><span class="fl">0.2</span>, <span class="fl">0.0001</span>),</span>
+<span id="cb248-4"><a href="17.html#cb248-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">u =</span> <span class="fu">map_dbl</span>(psi, g_est)</span>
+<span id="cb248-5"><a href="17.html#cb248-5" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb248-6"><a href="17.html#cb248-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>((u <span class="sc">&gt;=</span> q_0<span class="fl">.95</span> <span class="sc">&amp;</span> <span class="fu">lead</span>(u) <span class="sc">&lt;</span> q_0<span class="fl">.95</span>) <span class="sc">|</span> (u <span class="sc">&lt;</span> q_0<span class="fl">.95</span> <span class="sc">&amp;</span> <span class="fu">lag</span>(u) <span class="sc">&gt;=</span> q_0<span class="fl">.95</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb248-7"><a href="17.html#cb248-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">conf_low =</span> <span class="fu">mean</span>(<span class="fu">range</span>(psi)))</span>
+<span id="cb248-8"><a href="17.html#cb248-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb248-9"><a href="17.html#cb248-9" aria-hidden="true" tabindex="-1"></a>conf_high <span class="ot">&lt;-</span> </span>
+<span id="cb248-10"><a href="17.html#cb248-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
+<span id="cb248-11"><a href="17.html#cb248-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">psi =</span> <span class="fu">seq</span>(<span class="fl">0.3</span>, <span class="fl">0.35</span>, <span class="fl">0.0001</span>),</span>
+<span id="cb248-12"><a href="17.html#cb248-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">u =</span> <span class="fu">map_dbl</span>(psi, g_est)</span>
+<span id="cb248-13"><a href="17.html#cb248-13" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb248-14"><a href="17.html#cb248-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>((u <span class="sc">&lt;</span> q_0<span class="fl">.95</span> <span class="sc">&amp;</span> <span class="fu">lead</span>(u) <span class="sc">&gt;=</span> q_0<span class="fl">.95</span>) <span class="sc">|</span> (u <span class="sc">&gt;=</span> q_0<span class="fl">.95</span> <span class="sc">&amp;</span> <span class="fu">lag</span>(u) <span class="sc">&lt;</span> q_0<span class="fl">.95</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb248-15"><a href="17.html#cb248-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">conf_high =</span> <span class="fu">mean</span>(<span class="fu">range</span>(psi)))</span></code></pre></div>
+<p>Estimate of <code>psi</code> with 95% confidence interval.</p>
+<div class="sourceCode" id="cb249"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb249-1"><a href="17.html#cb249-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bind_cols</span>(estimate, conf_low, conf_high) <span class="sc">%&gt;%</span> </span>
+<span id="cb249-2"><a href="17.html#cb249-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">nsmall =</span> <span class="dv">3</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+estimate
+</th>
+<th style="text-align:right;">
+conf_low
+</th>
+<th style="text-align:right;">
+conf_high
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+-0.047
+</td>
+<td style="text-align:right;">
+-0.223
+</td>
+<td style="text-align:right;">
+0.333
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="16.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="results.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": null,
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/behrman/ci-wi/edit/master/17.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": null,
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "section"
+}
+});
+});
+</script>
+
+</body>
+
+</html>

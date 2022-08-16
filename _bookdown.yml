@@ -1,0 +1,17 @@
+new_session: true
+delete_merged_file: true
+
+rmd_files: [
+  "index.Rmd",
+  "11.Rmd",
+  "12.Rmd",
+  "13.Rmd",
+  "14.Rmd",
+  "15.Rmd",
+  "16.Rmd",
+  "17.Rmd",
+  "results.Rmd",
+  "references.Rmd"
+]
+
+before_chapter_script: "_common.R"

@@ -1,0 +1,11 @@
+bookdown::gitbook:
+  split_by: rmd
+  config:
+    toc:
+      collapse: section
+      before: |
+        <li><strong><a href="./">R Code for Causal Inference: What If</a></strong></li>
+    edit:
+      link: https://github.com/behrman/ci-wi/edit/master/%s
+    download: null
+    sharing: null

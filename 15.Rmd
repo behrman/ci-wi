@@ -1,0 +1,443 @@
+
+# 15 Outcome regression and propensity scores {-}
+
+```{r message=FALSE, warning=FALSE}
+# Packages
+library(tidyverse)
+
+# Parameters
+  # NHEFS data
+file_nhefs <- here::here("data/nhefs.rds")
+
+# Round and format vector
+round_format <- function(x, nsmall = 2, ...) {
+  format(round(x, digits = nsmall), nsmall = nsmall, ...)
+}
+# Print tibble
+kable <- function(x, cols = where(is.double), nsmall = 2, align = "r", ...) {
+  x %>%
+    mutate(across({{cols}}, round_format, nsmall = nsmall)) %>%
+    knitr::kable(align = align, ...) %>% 
+    kableExtra::kable_styling(full_width = FALSE, position = "left")
+}
+
+#===============================================================================
+
+# NHEFS data
+nhefs <- read_rds(file_nhefs)
+
+# NHEFS censored for those with weight measurements in 1982
+nhefs_censored <- 
+  nhefs %>% 
+  drop_na(wt82, wt82_71)
+```
+
+## 15.1 Outcome regression {-}
+
+Fit linear regression using same model as in 13.2.
+
+```{r}
+fit <- 
+  lm(
+    wt82_71 ~ qsmk * smokeintensity + sex + poly(age, 2) + race + education +
+      poly(wt71, 2) + I(smokeintensity^2) + poly(smokeyrs, 2) + active +
+      exercise,
+    data = nhefs_censored
+  )
+
+broom::tidy(fit)
+```
+
+Estimates for coefficients of `qsmk1` and `qsmk1:smokeintensity`.
+
+```{r}
+broom::tidy(fit) %>% 
+  filter(term %in% c("qsmk1", "qsmk1:smokeintensity")) %>% 
+  select(term, estimate) %>% 
+  kable(nsmall = 2, align = "lr")
+```
+
+Use `multcomp::glht()` to estimate ATE with 95% confidence interval.
+
+```{r}
+ate <- function(fit, contrast) {
+  linfct <- matrix(0, ncol = length(coef(fit)))
+  colnames(linfct) <- names(coef(fit))
+  linfct[, names(contrast)] <- contrast
+  
+  multcomp::glht(fit, linfct = linfct) %>%
+    broom::tidy(conf.int = TRUE) %>% 
+    select(estimate, conf_low = conf.low, conf_high = conf.high)
+}
+```
+
+Estimate ATE with 95% confidence interval for the effect of quitting smoking 5 cigarettes per day vs. not quitting.
+
+```{r}
+ate(fit, contrast = c(qsmk1 = 1, `qsmk1:smokeintensity` = 5)) %>%
+  kable(nsmall = 1)
+```
+
+Estimate ATE with 95% confidence interval for the effect of quitting smoking 40 cigarettes per day vs. not quitting.
+
+```{r}
+ate(fit, contrast = c(qsmk1 = 1, `qsmk1:smokeintensity` = 40)) %>%
+  kable(nsmall = 1)
+```
+
+Fit linear regression without product terms, the same model as in 13.3.
+
+```{r}
+fit <- 
+  lm(
+    wt82_71 ~ qsmk + sex + poly(age, 2) + race + education + poly(wt71, 2) +
+      poly(smokeintensity, 2) + poly(smokeyrs, 2) + active + exercise,
+    data = nhefs_censored
+  )
+
+broom::tidy(fit)
+```
+
+Estimate of ATE with 95% confidence interval.
+
+```{r}
+v <- 
+  broom::tidy(fit, conf.int = TRUE) %>% 
+  filter(term == "qsmk1") %>% 
+  select(estimate, conf_low = conf.low, conf_high = conf.high)
+
+kable(v, nsmall = 1)
+```
+
+```{r, echo=FALSE}
+v %>% 
+  save_result(
+    file = "data/ate.rds",
+    section = "15.1",
+    method = "Outcome regression",
+    dataset = "Censored"
+  )
+```
+
+## 15.2 Propensity scores {-}
+
+Fit logistic regression model for propensity scores.
+
+```{r}
+fit <- 
+  glm(
+    qsmk ~ sex + poly(age, 2) + race + education + poly(wt71, 2) + +
+      poly(smokeintensity, 2) + poly(smokeyrs, 2) + active + exercise,
+    family = binomial(),
+    data = nhefs
+  )
+
+broom::tidy(fit)
+```
+
+Add propensity scores to data.
+
+```{r}
+nhefs <- 
+  nhefs %>% 
+  mutate(propensity = predict(fit, type = "response"))
+```
+
+Individuals with the lowest and highest propensity scores.
+
+```{r}
+nhefs %>% 
+  select(seqn, propensity, qsmk) %>% 
+  arrange(propensity) %>% 
+  slice(1, n()) %>% 
+  kable(nsmall = 3)
+```
+
+Consistent with their propensity scores, individual 22941 did not quit smoking and individual 24949 did.
+
+Distribution of propensity scores for non-quitters and quitters.
+
+```{r, fig.asp=1}
+qsmk_labels <- c("0" = "Non-quitters", "1" = "Quitters")
+
+means <- 
+  nhefs %>% 
+  group_by(qsmk) %>% 
+  summarize(propensity_mean = mean(propensity))
+
+nhefs %>% 
+  ggplot(aes(propensity)) +
+  geom_histogram(binwidth = 0.05, boundary = 0.025) +
+  geom_vline(aes(xintercept = propensity_mean), data = means, color = "red") +
+  scale_x_continuous(breaks = scales::breaks_width(0.1)) +
+  facet_grid(rows = vars(qsmk), labeller = labeller(qsmk = qsmk_labels)) +
+  labs(
+    title = "Distribution of propensity scores for non-quitters and quitters",
+    subtitle = "Red lines indicate mean propensity score for group",
+    x = "Propensity score",
+    y = "Number of subjects"
+  )
+```
+
+Mean propensity score for group.
+
+```{r}
+kable(means, nsmall = 3)
+```
+
+As expected, those who did not quit smoking had, on average, a lower estimated probability of quitting (`r round_format(means %>% filter(qsmk == "0") %>% pull(propensity_mean), nsmall = 3)`) than those who did quit (`r round_format(means %>% filter(qsmk == "1") %>% pull(propensity_mean), nsmall = 3)`).
+
+Mean propensity scores vs. proportion for subjects who quit smoking.
+
+```{r, fig.asp=1}
+v <- 
+  nhefs %>% 
+  group_by(bin = cut_width(propensity, width = 0.05, boundary = 0.025)) %>% 
+  summarize(
+    propensity_mean = mean(propensity),
+    qsmk_mean = mean(as.double(qsmk) - 1),
+    n = n()
+  ) %>% 
+  filter(n > 1)
+
+v %>% 
+  ggplot(aes(propensity_mean, qsmk_mean, size = n)) +
+  geom_point() +
+  geom_abline() +
+  scale_x_continuous(breaks = scales::breaks_width(0.1)) +
+  scale_y_continuous(breaks = scales::breaks_width(0.1)) +
+  coord_fixed() +
+  labs(
+    title = 
+      "Mean propensity scores vs. proportion for subjects who quit smoking",
+    x = "Mean propensity score for bin",
+    y = "Proportion of subjects in bin who quit smoking"
+  )
+```
+
+For the bins in the histogram, this plot shows that the mean propensity score for each bin is fairly close to the actual proportion of subjects in the bin who quit smoking.
+
+## 15.3 Propensity stratification and standardization {-}
+
+Individual 22005 is the only person with a propensity score near 0.6563.
+
+```{r}
+nhefs %>% 
+  filter(near(propensity, 0.6563, tol = 0.0001)) %>% 
+  select(seqn, propensity) %>% 
+  kable(nsmall = 4)
+```
+
+Add column for propensity score deciles.
+
+```{r}
+nhefs <- 
+  nhefs %>% 
+  arrange(propensity, seqn) %>% 
+  mutate(
+    decile = cut_number(propensity, n = 10, labels = FALSE) %>% as.factor()
+  ) %>% 
+  arrange(seqn)
+```
+
+Number of individuals in each decile.
+
+```{r}
+nhefs %>% 
+  count(decile) %>% 
+  kable()
+```
+
+Fit linear regression with decile interaction.
+
+```{r}
+fit <- lm(wt82_71 ~ qsmk * decile, data = nhefs)
+
+broom::tidy(fit)
+```
+
+Estimate ATE with 95% confidence interval for decile.
+
+```{r}
+ate <- function(fit, decile) {
+  if (decile == 1) {
+    contrast <- c(qsmk1 = 1)
+  } else {
+    contrast <- c(1, 1)
+    names(contrast) <- c("qsmk1", str_c("qsmk1:decile", decile))
+  }
+  linfct <- matrix(0, ncol = length(coef(fit)))
+  colnames(linfct) <- names(coef(fit))
+  linfct[, names(contrast)] <- contrast
+  
+  multcomp::glht(fit, linfct = linfct) %>%
+    broom::tidy(conf.int = TRUE) %>% 
+    select(estimate, conf_low = conf.low, conf_high = conf.high) %>% 
+    add_column(decile, .before = "estimate")
+}
+```
+
+Estimates of ATE with 95% confidence intervals for all deciles.
+
+```{r, message=FALSE}
+ate_decile <- 
+  1:10 %>% 
+  map_dfr(~ ate(fit, decile = .)) %>% 
+  mutate(across(decile, as.factor))
+
+ate_decile %>% 
+  kable(nsmall = 1)
+```
+
+Estimated average treatment effect for each propensity score decile.
+
+```{r}
+v <- 
+  nhefs %>% 
+  group_by(decile) %>% 
+  summarize(propensity_mean = mean(propensity)) %>% 
+  left_join(ate_decile, by = "decile")
+
+v %>% 
+  ggplot(aes(propensity_mean, estimate)) +
+  geom_pointrange(aes(ymin = conf_low, ymax = conf_high)) +
+  labs(
+    title = 
+      "Estimated average treatment effect for each propensity score decile",
+    subtitle = "Range indicates 95% confidence interval",
+    x = "Mean propensity score for decile",
+    y = "Estimated average treatment effect for decile (kg)"
+  )
+```
+
+Fit linear regression without decile interaction.
+
+```{r}
+fit <- lm(wt82_71 ~ qsmk + decile, data = nhefs)
+
+broom::tidy(fit)
+```
+
+Propensity score stratification - Decile: estimate of ATE with 95% confidence interval.
+
+```{r}
+v <-
+  broom::tidy(fit, conf.int = TRUE) %>% 
+  filter(term == "qsmk1") %>% 
+  select(estimate, conf_low = conf.low, conf_high = conf.high)
+
+kable(v, nsmall = 1)
+```
+
+```{r, echo=FALSE}
+v %>% 
+  save_result(
+    file = "data/ate.rds",
+    section = "15.3",
+    method = "Propensity score stratification - Decile",
+    dataset = "Full"
+  )
+```
+
+Fit linear regression with continuous propensity score.
+
+```{r}
+fit <- lm(wt82_71 ~ qsmk + propensity, data = nhefs)
+
+broom::tidy(fit)
+```
+
+Propensity score stratification - Continuous: estimate of ATE with 95% confidence interval.
+
+```{r}
+v <-
+  broom::tidy(fit, conf.int = TRUE) %>% 
+  filter(term == "qsmk1") %>% 
+  select(estimate, conf_low = conf.low, conf_high = conf.high)
+
+kable(v, nsmall = 1)
+```
+
+```{r, echo=FALSE}
+v %>% 
+  save_result(
+    file = "data/ate.rds",
+    section = "15.3",
+    method = "Propensity score stratification - Continuous",
+    dataset = "Full"
+  )
+```
+
+Data with values for `wt82_71`.
+
+```{r}
+nhefs_censored <- 
+  nhefs %>% 
+  drop_na(wt82_71)
+```
+
+ATE using fit on sample of data.
+
+```{r}
+ate <- function(data, sample_rows) {
+  fit <- lm(wt82_71 ~ qsmk + propensity, data = data %>% slice(sample_rows))
+  
+  mean(predict(fit, newdata = nhefs %>% mutate(qsmk = "1"))) -
+    mean(predict(fit, newdata = nhefs %>% mutate(qsmk = "0")))
+}
+```
+
+Estimate of ATE.
+
+```{r}
+estimate <- ate(data = nhefs_censored, sample_rows = 1:nrow(nhefs_censored))
+
+tibble(estimate) %>% 
+  kable(nsmall = 1)
+```
+
+We will now use bootstrapping to obtain a confidence interval for this estimate.
+
+Perform bootstrap resampling.
+
+```{r}
+set.seed(231)
+
+n_boot <- 1e4
+
+boot_out <- boot::boot(data = nhefs_censored, statistic = ate, R = n_boot)
+```
+
+Distribution of average treatment effect.
+
+```{r}
+tibble(ate = boot_out$t) %>% 
+  ggplot(aes(ate)) +
+  geom_histogram(binwidth = 0.1, boundary = 0) +
+  labs(
+    title = "Distribution of average treatment effect",
+    x = "Average treatment effect",
+    y = "Count"
+  )
+```
+
+Propensity score standardization: estimate of ATE with 95% confidence interval. Confidence interval calculated using bias-corrected and accelerated (BCa) method.
+
+```{r}
+v <- 
+  broom::tidy(boot_out, conf.int = TRUE, conf.method = "bca") %>% 
+  transmute(estimate, conf_low = conf.low, conf_high = conf.high)
+
+kable(v, nsmall = 1)
+```
+
+```{r, echo=FALSE}
+v %>% 
+  save_result(
+    file = "data/ate.rds",
+    section = "15.3",
+    method = "Propensity score standardization",
+    dataset = "Full"
+  )
+```
+

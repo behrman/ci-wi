@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>16 Instrumental variable estimation | R Code for Causal Inference: What If</title>
+  <meta name="description" content="16 Instrumental variable estimation | R Code for Causal Inference: What If." />
+  <meta name="generator" content="bookdown 0.28 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="16 Instrumental variable estimation | R Code for Causal Inference: What If" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:description" content="16 Instrumental variable estimation | R Code for Causal Inference: What If." />
+  <meta name="github-repo" content="behrman/ci-wi" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="16 Instrumental variable estimation | R Code for Causal Inference: What If" />
+  
+  <meta name="twitter:description" content="16 Instrumental variable estimation | R Code for Causal Inference: What If." />
+  
+
+<meta name="author" content="Bill Behrman" />
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="15.html"/>
+<link rel="next" href="17.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+<script src="libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+/* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><strong><a href="./">R Code for Causal Inference: What If</a></strong></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Welcome</a>
+<ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#how-to-install-required-r-packages"><i class="fa fa-check"></i>How to install required R packages</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#how-to-download-dataset"><i class="fa fa-check"></i>How to download dataset</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#source-for-this-book"><i class="fa fa-check"></i>Source for this book</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="11.html"><a href="11.html"><i class="fa fa-check"></i>11 Why Model?</a>
+<ul>
+<li class="chapter" data-level="" data-path="11.html"><a href="11.html#data-cannot-speak-for-themselves"><i class="fa fa-check"></i>11.1 Data cannot speak for themselves</a></li>
+<li class="chapter" data-level="" data-path="11.html"><a href="11.html#parametric-estimators-of-the-conditional-mean"><i class="fa fa-check"></i>11.2 Parametric estimators of the conditional mean</a></li>
+<li class="chapter" data-level="" data-path="11.html"><a href="11.html#nonparametric-estimators-of-the-conditional-mean"><i class="fa fa-check"></i>11.3 Nonparametric estimators of the conditional mean</a></li>
+<li class="chapter" data-level="" data-path="11.html"><a href="11.html#smoothing"><i class="fa fa-check"></i>11.4 Smoothing</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html"><i class="fa fa-check"></i>12 IP weighting and marginal structural models</a>
+<ul>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html#the-causal-question"><i class="fa fa-check"></i>12.1 The causal question</a></li>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html#estimating-ip-weights-via-modeling"><i class="fa fa-check"></i>12.2 Estimating IP weights via modeling</a></li>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html#stabilized-ip-weights"><i class="fa fa-check"></i>12.3 Stabilized IP weights</a>
+<ul>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html#fine-point-12.2-checking-positivity"><i class="fa fa-check"></i>Fine Point 12.2 Checking positivity</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html#marginal-structural-models"><i class="fa fa-check"></i>12.4 Marginal structural models</a></li>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html#effect-modification-and-marginal-structural-models"><i class="fa fa-check"></i>12.5 Effect modification and marginal structural models</a></li>
+<li class="chapter" data-level="" data-path="12.html"><a href="12.html#censoring-and-missing-data"><i class="fa fa-check"></i>12.6 Censoring and missing data</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="13.html"><a href="13.html"><i class="fa fa-check"></i>13 Standardization and the parametric g-formula</a>
+<ul>
+<li class="chapter" data-level="" data-path="13.html"><a href="13.html#standardization-as-an-alternative-to-ip-weighting"><i class="fa fa-check"></i>13.1 Standardization as an alternative to IP weighting</a></li>
+<li class="chapter" data-level="" data-path="13.html"><a href="13.html#estimating-the-mean-outcome-via-modeling"><i class="fa fa-check"></i>13.2 Estimating the mean outcome via modeling</a></li>
+<li class="chapter" data-level="" data-path="13.html"><a href="13.html#standardizing-the-mean-outcome-to-the-confounder-distribution"><i class="fa fa-check"></i>13.3 Standardizing the mean outcome to the confounder distribution</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="14.html"><a href="14.html"><i class="fa fa-check"></i>14 G-estimation and structural nested models</a>
+<ul>
+<li class="chapter" data-level="" data-path="14.html"><a href="14.html#the-causal-question-revisited"><i class="fa fa-check"></i>14.1 The causal question revisited</a></li>
+<li class="chapter" data-level="" data-path="14.html"><a href="14.html#rank-preservation"><i class="fa fa-check"></i>14.4 Rank preservation</a></li>
+<li class="chapter" data-level="" data-path="14.html"><a href="14.html#g-estimation"><i class="fa fa-check"></i>14.5 G-estimation</a></li>
+<li class="chapter" data-level="" data-path="14.html"><a href="14.html#structural-nested-models-with-two-or-more-parameters"><i class="fa fa-check"></i>14.6 Structural nested models with two or more parameters</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="15.html"><a href="15.html"><i class="fa fa-check"></i>15 Outcome regression and propensity scores</a>
+<ul>
+<li class="chapter" data-level="" data-path="15.html"><a href="15.html#outcome-regression"><i class="fa fa-check"></i>15.1 Outcome regression</a></li>
+<li class="chapter" data-level="" data-path="15.html"><a href="15.html#propensity-scores"><i class="fa fa-check"></i>15.2 Propensity scores</a></li>
+<li class="chapter" data-level="" data-path="15.html"><a href="15.html#propensity-stratification-and-standardization"><i class="fa fa-check"></i>15.3 Propensity stratification and standardization</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="16.html"><a href="16.html"><i class="fa fa-check"></i>16 Instrumental variable estimation</a>
+<ul>
+<li class="chapter" data-level="" data-path="16.html"><a href="16.html#the-three-instrumental-conditions"><i class="fa fa-check"></i>16.1 The three instrumental conditions</a></li>
+<li class="chapter" data-level="" data-path="16.html"><a href="16.html#the-usual-iv-estimand"><i class="fa fa-check"></i>16.2 The usual IV estimand</a></li>
+<li class="chapter" data-level="" data-path="16.html"><a href="16.html#the-three-instrumental-conditions-revisited"><i class="fa fa-check"></i>16.5 The three instrumental conditions revisited</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="17.html"><a href="17.html"><i class="fa fa-check"></i>17 Causal survival analysis</a>
+<ul>
+<li class="chapter" data-level="" data-path="17.html"><a href="17.html#hazards-and-risks"><i class="fa fa-check"></i>17.1 Hazards and risks</a></li>
+<li class="chapter" data-level="" data-path="17.html"><a href="17.html#from-hazards-to-risks"><i class="fa fa-check"></i>17.2 From hazards to risks</a></li>
+<li class="chapter" data-level="" data-path="17.html"><a href="17.html#ip-weighting-of-marginal-structural-models"><i class="fa fa-check"></i>17.4 IP weighting of marginal structural models</a></li>
+<li class="chapter" data-level="" data-path="17.html"><a href="17.html#the-parametric-g-formula"><i class="fa fa-check"></i>17.5 The parametric g-formula</a></li>
+<li class="chapter" data-level="" data-path="17.html"><a href="17.html#g-estimation-of-structural-nested-models"><i class="fa fa-check"></i>17.6 G-estimation of structural nested models</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="results.html"><a href="results.html"><i class="fa fa-check"></i>Results</a>
+<ul>
+<li class="chapter" data-level="" data-path="results.html"><a href="results.html#average-treatment-effect"><i class="fa fa-check"></i>Average treatment effect</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">R Code for Causal Inference: What If</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="instrumental-variable-estimation" class="section level1 unnumbered hasAnchor">
+<h1>16 Instrumental variable estimation<a href="16.html#instrumental-variable-estimation" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div class="sourceCode" id="cb166"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb166-1"><a href="16.html#cb166-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Packages</span></span>
+<span id="cb166-2"><a href="16.html#cb166-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb166-3"><a href="16.html#cb166-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb166-4"><a href="16.html#cb166-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Parameters</span></span>
+<span id="cb166-5"><a href="16.html#cb166-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># NHEFS data</span></span>
+<span id="cb166-6"><a href="16.html#cb166-6" aria-hidden="true" tabindex="-1"></a>file_nhefs <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;data/nhefs.rds&quot;</span>)</span>
+<span id="cb166-7"><a href="16.html#cb166-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb166-8"><a href="16.html#cb166-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Round and format vector</span></span>
+<span id="cb166-9"><a href="16.html#cb166-9" aria-hidden="true" tabindex="-1"></a>round_format <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">nsmall =</span> <span class="dv">2</span>, ...) {</span>
+<span id="cb166-10"><a href="16.html#cb166-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">format</span>(<span class="fu">round</span>(x, <span class="at">digits =</span> nsmall), <span class="at">nsmall =</span> nsmall, ...)</span>
+<span id="cb166-11"><a href="16.html#cb166-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb166-12"><a href="16.html#cb166-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Print tibble</span></span>
+<span id="cb166-13"><a href="16.html#cb166-13" aria-hidden="true" tabindex="-1"></a>kable <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">cols =</span> <span class="fu">where</span>(is.double), <span class="at">nsmall =</span> <span class="dv">2</span>, <span class="at">align =</span> <span class="st">&quot;r&quot;</span>, ...) {</span>
+<span id="cb166-14"><a href="16.html#cb166-14" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">%&gt;%</span></span>
+<span id="cb166-15"><a href="16.html#cb166-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="fu">across</span>({{cols}}, round_format, <span class="at">nsmall =</span> nsmall)) <span class="sc">%&gt;%</span></span>
+<span id="cb166-16"><a href="16.html#cb166-16" aria-hidden="true" tabindex="-1"></a>    knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">align =</span> align, ...) <span class="sc">%&gt;%</span> </span>
+<span id="cb166-17"><a href="16.html#cb166-17" aria-hidden="true" tabindex="-1"></a>    kableExtra<span class="sc">::</span><span class="fu">kable_styling</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>, <span class="at">position =</span> <span class="st">&quot;left&quot;</span>)</span>
+<span id="cb166-18"><a href="16.html#cb166-18" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb166-19"><a href="16.html#cb166-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb166-20"><a href="16.html#cb166-20" aria-hidden="true" tabindex="-1"></a><span class="co">#===============================================================================</span></span>
+<span id="cb166-21"><a href="16.html#cb166-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb166-22"><a href="16.html#cb166-22" aria-hidden="true" tabindex="-1"></a><span class="co"># NHEFS data with qsmk as a double</span></span>
+<span id="cb166-23"><a href="16.html#cb166-23" aria-hidden="true" tabindex="-1"></a>nhefs <span class="ot">&lt;-</span> </span>
+<span id="cb166-24"><a href="16.html#cb166-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_rds</span>(file_nhefs) <span class="sc">%&gt;%</span> </span>
+<span id="cb166-25"><a href="16.html#cb166-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">qsmk =</span> <span class="fu">as.double</span>(qsmk) <span class="sc">-</span> <span class="dv">1</span>)</span>
+<span id="cb166-26"><a href="16.html#cb166-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb166-27"><a href="16.html#cb166-27" aria-hidden="true" tabindex="-1"></a><span class="co"># NHEFS censored to remove missing weight and price measurements in 1982</span></span>
+<span id="cb166-28"><a href="16.html#cb166-28" aria-hidden="true" tabindex="-1"></a>nhefs_censored <span class="ot">&lt;-</span> </span>
+<span id="cb166-29"><a href="16.html#cb166-29" aria-hidden="true" tabindex="-1"></a>  nhefs <span class="sc">%&gt;%</span> </span>
+<span id="cb166-30"><a href="16.html#cb166-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>(wt82, wt82_71, price82)</span></code></pre></div>
+<div id="the-three-instrumental-conditions" class="section level2 unnumbered hasAnchor">
+<h2>16.1 The three instrumental conditions<a href="16.html#the-three-instrumental-conditions" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>In the following, we will consider <code>price82</code> as an instrumental variable:</p>
+<ul>
+<li><code>price82</code>: Average tobacco price in state of residence in 1982 ($USD 2008)</li>
+</ul>
+<p>Range of tobacco prices.</p>
+<div class="sourceCode" id="cb167"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb167-1"><a href="16.html#cb167-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(nhefs_censored<span class="sc">$</span>price82)</span></code></pre></div>
+<pre><code>#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#&gt;   1.452   1.740   1.815   1.806   1.868   2.103</code></pre>
+<p>The prices ranged from $1.45 to $2.10 with an average of around $1.81.</p>
+<p>Distribution of tobacco prices.</p>
+<div class="sourceCode" id="cb169"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb169-1"><a href="16.html#cb169-1" aria-hidden="true" tabindex="-1"></a>nhefs_censored <span class="sc">%&gt;%</span> </span>
+<span id="cb169-2"><a href="16.html#cb169-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(price82)) <span class="sc">+</span> </span>
+<span id="cb169-3"><a href="16.html#cb169-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">binwidth =</span> <span class="fl">0.05</span>, <span class="at">boundary =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb169-4"><a href="16.html#cb169-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">mean</span>(nhefs_censored<span class="sc">$</span>price82), <span class="at">color =</span> <span class="st">&quot;red&quot;</span>) <span class="sc">+</span></span>
+<span id="cb169-5"><a href="16.html#cb169-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> scales<span class="sc">::</span><span class="fu">breaks_width</span>(<span class="fl">0.1</span>)) <span class="sc">+</span></span>
+<span id="cb169-6"><a href="16.html#cb169-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb169-7"><a href="16.html#cb169-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;Distribution of tobacco prices&quot;</span>,</span>
+<span id="cb169-8"><a href="16.html#cb169-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">&quot;Red line indicates mean price&quot;</span>,</span>
+<span id="cb169-9"><a href="16.html#cb169-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Price of tobacco&quot;</span>,</span>
+<span id="cb169-10"><a href="16.html#cb169-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Count&quot;</span></span>
+<span id="cb169-11"><a href="16.html#cb169-11" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<p><img src="16_files/figure-html/unnamed-chunk-3-1.png" width="100%" /></p>
+<p>Proportion of subjects who quit smoking vs. mean price of tobacco.</p>
+<div class="sourceCode" id="cb170"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb170-1"><a href="16.html#cb170-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> </span>
+<span id="cb170-2"><a href="16.html#cb170-2" aria-hidden="true" tabindex="-1"></a>  nhefs_censored <span class="sc">%&gt;%</span> </span>
+<span id="cb170-3"><a href="16.html#cb170-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(price82, seqn) <span class="sc">%&gt;%</span> </span>
+<span id="cb170-4"><a href="16.html#cb170-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">decile =</span> <span class="fu">cut_number</span>(price82, <span class="at">n =</span> <span class="dv">10</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb170-5"><a href="16.html#cb170-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(decile) <span class="sc">%&gt;%</span> </span>
+<span id="cb170-6"><a href="16.html#cb170-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">across</span>(<span class="fu">c</span>(price82, qsmk), mean))</span>
+<span id="cb170-7"><a href="16.html#cb170-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb170-8"><a href="16.html#cb170-8" aria-hidden="true" tabindex="-1"></a>v <span class="sc">%&gt;%</span> </span>
+<span id="cb170-9"><a href="16.html#cb170-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(price82, qsmk)) <span class="sc">+</span></span>
+<span id="cb170-10"><a href="16.html#cb170-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb170-11"><a href="16.html#cb170-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">breaks =</span> scales<span class="sc">::</span><span class="fu">breaks_width</span>(<span class="fl">0.02</span>)) <span class="sc">+</span></span>
+<span id="cb170-12"><a href="16.html#cb170-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb170-13"><a href="16.html#cb170-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;Proportion of subjects who quit smoking vs. mean price of tobacco&quot;</span>,</span>
+<span id="cb170-14"><a href="16.html#cb170-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">&quot;By price decile&quot;</span>,</span>
+<span id="cb170-15"><a href="16.html#cb170-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Mean price of tobacco in decile&quot;</span>,</span>
+<span id="cb170-16"><a href="16.html#cb170-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Proportion of subjects who quit smoking in decile &quot;</span></span>
+<span id="cb170-17"><a href="16.html#cb170-17" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<p><img src="16_files/figure-html/unnamed-chunk-4-1.png" width="100%" /></p>
+<p>By price decile, there is a very week association, if any, of the mean price of tobacco and the proportion of subjects who quit smoking.</p>
+<p>Add variable <code>highprice</code> to indicate that <code>price82</code> is greater that 1.5.</p>
+<div class="sourceCode" id="cb171"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb171-1"><a href="16.html#cb171-1" aria-hidden="true" tabindex="-1"></a>nhefs_censored <span class="ot">&lt;-</span> </span>
+<span id="cb171-2"><a href="16.html#cb171-2" aria-hidden="true" tabindex="-1"></a>  nhefs_censored <span class="sc">%&gt;%</span> </span>
+<span id="cb171-3"><a href="16.html#cb171-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb171-4"><a href="16.html#cb171-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">highprice =</span></span>
+<span id="cb171-5"><a href="16.html#cb171-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">case_when</span>(</span>
+<span id="cb171-6"><a href="16.html#cb171-6" aria-hidden="true" tabindex="-1"></a>        price82 <span class="sc">&lt;=</span> <span class="fl">1.5</span> <span class="sc">~</span> <span class="dv">0</span>,</span>
+<span id="cb171-7"><a href="16.html#cb171-7" aria-hidden="true" tabindex="-1"></a>        price82 <span class="sc">&gt;</span> <span class="fl">1.5</span> <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb171-8"><a href="16.html#cb171-8" aria-hidden="true" tabindex="-1"></a>        <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">NA_real_</span></span>
+<span id="cb171-9"><a href="16.html#cb171-9" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">%&gt;%</span> </span>
+<span id="cb171-10"><a href="16.html#cb171-10" aria-hidden="true" tabindex="-1"></a>      <span class="fu">as.factor</span>()</span>
+<span id="cb171-11"><a href="16.html#cb171-11" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<p>Percentage of those who quit smoking by price group.</p>
+<div class="sourceCode" id="cb172"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb172-1"><a href="16.html#cb172-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> </span>
+<span id="cb172-2"><a href="16.html#cb172-2" aria-hidden="true" tabindex="-1"></a>  nhefs_censored <span class="sc">%&gt;%</span> </span>
+<span id="cb172-3"><a href="16.html#cb172-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(highprice) <span class="sc">%&gt;%</span> </span>
+<span id="cb172-4"><a href="16.html#cb172-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">qsmk_pct =</span> <span class="dv">100</span> <span class="sc">*</span> <span class="fu">mean</span>(qsmk))</span>
+<span id="cb172-5"><a href="16.html#cb172-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb172-6"><a href="16.html#cb172-6" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(v, <span class="at">nsmall =</span> <span class="dv">1</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+highprice
+</th>
+<th style="text-align:right;">
+qsmk_pct
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+19.5
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+25.8
+</td>
+</tr>
+</tbody>
+</table>
+<p>25.8% of those in the <code>highprice</code> = 1 group quit smoking, and 19.5% of those in the <code>highprice</code> = 0 group quit smoking. The risk difference is therefore 6.3%.</p>
+</div>
+<div id="the-usual-iv-estimand" class="section level2 unnumbered hasAnchor">
+<h2>16.2 The usual IV estimand<a href="16.html#the-usual-iv-estimand" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Mean values of weight gain (<code>wt82_71</code>) and whether subject quit smoking (<code>qsmk</code>) by price group.</p>
+<div class="sourceCode" id="cb173"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb173-1"><a href="16.html#cb173-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> </span>
+<span id="cb173-2"><a href="16.html#cb173-2" aria-hidden="true" tabindex="-1"></a>  nhefs_censored <span class="sc">%&gt;%</span> </span>
+<span id="cb173-3"><a href="16.html#cb173-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(highprice) <span class="sc">%&gt;%</span> </span>
+<span id="cb173-4"><a href="16.html#cb173-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">across</span>(<span class="fu">c</span>(wt82_71, qsmk), mean))</span>
+<span id="cb173-5"><a href="16.html#cb173-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb173-6"><a href="16.html#cb173-6" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(v, <span class="at">nsmall =</span> <span class="dv">4</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+highprice
+</th>
+<th style="text-align:right;">
+wt82_71
+</th>
+<th style="text-align:right;">
+qsmk
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+2.5357
+</td>
+<td style="text-align:right;">
+0.1951
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+2.6860
+</td>
+<td style="text-align:right;">
+0.2578
+</td>
+</tr>
+</tbody>
+</table>
+<p>The differences in the means.</p>
+<div class="sourceCode" id="cb174"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb174-1"><a href="16.html#cb174-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> </span>
+<span id="cb174-2"><a href="16.html#cb174-2" aria-hidden="true" tabindex="-1"></a>  v <span class="sc">%&gt;%</span> </span>
+<span id="cb174-3"><a href="16.html#cb174-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb174-4"><a href="16.html#cb174-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">wt82_71_diff =</span> wt82_71[highprice <span class="sc">==</span> <span class="st">&quot;1&quot;</span>] <span class="sc">-</span> wt82_71[highprice <span class="sc">==</span> <span class="st">&quot;0&quot;</span>],</span>
+<span id="cb174-5"><a href="16.html#cb174-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">qsmk_diff =</span> qsmk[highprice <span class="sc">==</span> <span class="st">&quot;1&quot;</span>] <span class="sc">-</span> qsmk[highprice <span class="sc">==</span> <span class="st">&quot;0&quot;</span>]</span>
+<span id="cb174-6"><a href="16.html#cb174-6" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb174-7"><a href="16.html#cb174-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb174-8"><a href="16.html#cb174-8" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(v, <span class="at">nsmall =</span> <span class="dv">4</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+wt82_71_diff
+</th>
+<th style="text-align:right;">
+qsmk_diff
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+0.1503
+</td>
+<td style="text-align:right;">
+0.0627
+</td>
+</tr>
+</tbody>
+</table>
+<p>Estimate of ATE.</p>
+<div class="sourceCode" id="cb175"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb175-1"><a href="16.html#cb175-1" aria-hidden="true" tabindex="-1"></a>v <span class="sc">%&gt;%</span> </span>
+<span id="cb175-2"><a href="16.html#cb175-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">estimate =</span> wt82_71_diff <span class="sc">/</span> qsmk_diff) <span class="sc">%&gt;%</span> </span>
+<span id="cb175-3"><a href="16.html#cb175-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">nsmall =</span> <span class="dv">1</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+estimate
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+2.4
+</td>
+</tr>
+</tbody>
+</table>
+<p>Equivalent estimate of ATE calculated using two saturated linear models.</p>
+<div class="sourceCode" id="cb176"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb176-1"><a href="16.html#cb176-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(</span>
+<span id="cb176-2"><a href="16.html#cb176-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">estimate =</span></span>
+<span id="cb176-3"><a href="16.html#cb176-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coef</span>(<span class="fu">lm</span>(wt82_71 <span class="sc">~</span> highprice, <span class="at">data =</span> nhefs_censored))[<span class="st">&quot;highprice1&quot;</span>] <span class="sc">/</span></span>
+<span id="cb176-4"><a href="16.html#cb176-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coef</span>(<span class="fu">lm</span>(qsmk <span class="sc">~</span> highprice, <span class="at">data =</span> nhefs_censored))[<span class="st">&quot;highprice1&quot;</span>]</span>
+<span id="cb176-5"><a href="16.html#cb176-5" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span> </span>
+<span id="cb176-6"><a href="16.html#cb176-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">nsmall =</span> <span class="dv">1</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+estimate
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+2.4
+</td>
+</tr>
+</tbody>
+</table>
+<p>Fit two-stage least-squares regression.</p>
+<div class="sourceCode" id="cb177"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb177-1"><a href="16.html#cb177-1" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> ivreg<span class="sc">::</span><span class="fu">ivreg</span>(wt82_71 <span class="sc">~</span> qsmk <span class="sc">|</span> highprice, <span class="at">data =</span> nhefs_censored)</span>
+<span id="cb177-2"><a href="16.html#cb177-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb177-3"><a href="16.html#cb177-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(fit)</span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Call:
+#&gt; ivreg::ivreg(formula = wt82_71 ~ qsmk | highprice, data = nhefs_censored)
+#&gt; 
+#&gt; Residuals:
+#&gt;       Min        1Q    Median        3Q       Max 
+#&gt; -43.34863  -4.00206  -0.02712   4.17040  46.47022 
+#&gt; 
+#&gt; Coefficients:
+#&gt;             Estimate Std. Error t value Pr(&gt;|t|)
+#&gt; (Intercept)    2.068      5.085   0.407    0.684
+#&gt; qsmk           2.396     19.840   0.121    0.904
+#&gt; 
+#&gt; Diagnostic tests:
+#&gt;                   df1  df2 statistic p-value
+#&gt; Weak instruments    1 1474     0.822   0.365
+#&gt; Wu-Hausman          1 1473     0.000   0.989
+#&gt; Sargan              0   NA        NA      NA
+#&gt; 
+#&gt; Residual standard error: 7.856 on 1474 degrees of freedom
+#&gt; Multiple R-Squared: 0.02129, Adjusted R-squared: 0.02062 
+#&gt; Wald test: 0.01459 on 1 and 1474 DF,  p-value: 0.9039</code></pre>
+<p>Here’s how to interpret the diagnostic tests:</p>
+<ul>
+<li><p>Weak instruments: A good instrumental variable is highly correlated with endogenous predictor variables and uncorrelated with the errors. This would be indicated with a high value for the statistic and a low p-value. Thus, <code>highprice</code> does not appear to be a good instrumental value.</p></li>
+<li><p>Wu-Hausman: Ordinary least squares can be inconsistent when predictor variables are correlated with the errors. This would be indicated with a high value for the statistic and a low p-value. This does not appear to be the case.</p></li>
+</ul>
+<p>The F-statistic for the first-stage model is less than 10.</p>
+<div class="sourceCode" id="cb179"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb179-1"><a href="16.html#cb179-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lm</span>(qsmk <span class="sc">~</span> highprice, <span class="at">data =</span> nhefs_censored) <span class="sc">%&gt;%</span> </span>
+<span id="cb179-2"><a href="16.html#cb179-2" aria-hidden="true" tabindex="-1"></a>  broom<span class="sc">::</span><span class="fu">glance</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb179-3"><a href="16.html#cb179-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">f_statistic =</span> statistic) <span class="sc">%&gt;%</span> </span>
+<span id="cb179-4"><a href="16.html#cb179-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">nsmall =</span> <span class="dv">1</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+f_statistic
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+0.8
+</td>
+</tr>
+</tbody>
+</table>
+<p>Estimate of ATE with 95% confidence interval.</p>
+<div class="sourceCode" id="cb180"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb180-1"><a href="16.html#cb180-1" aria-hidden="true" tabindex="-1"></a>broom<span class="sc">::</span><span class="fu">tidy</span>(fit, <span class="at">conf.int =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb180-2"><a href="16.html#cb180-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(term <span class="sc">==</span> <span class="st">&quot;qsmk&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb180-3"><a href="16.html#cb180-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(estimate, <span class="at">conf_low =</span> conf.low, <span class="at">conf_high =</span> conf.high) <span class="sc">%&gt;%</span> </span>
+<span id="cb180-4"><a href="16.html#cb180-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">nsmall =</span> <span class="dv">1</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+estimate
+</th>
+<th style="text-align:right;">
+conf_low
+</th>
+<th style="text-align:right;">
+conf_high
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+2.4
+</td>
+<td style="text-align:right;">
+-36.5
+</td>
+<td style="text-align:right;">
+41.3
+</td>
+</tr>
+</tbody>
+</table>
+<p>The confidence interval is very large.</p>
+<p>We will now estimate the ATE using g-estimation.</p>
+<p>For potential counterfactual (<code>psi</code>), calculate logistic regression coefficient (<code>alpha</code>) and its p-value (<code>p_value</code>).</p>
+<div class="sourceCode" id="cb181"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb181-1"><a href="16.html#cb181-1" aria-hidden="true" tabindex="-1"></a>g_est <span class="ot">&lt;-</span> <span class="cf">function</span>(psi) {</span>
+<span id="cb181-2"><a href="16.html#cb181-2" aria-hidden="true" tabindex="-1"></a>  geepack<span class="sc">::</span><span class="fu">geeglm</span>(</span>
+<span id="cb181-3"><a href="16.html#cb181-3" aria-hidden="true" tabindex="-1"></a>    highprice <span class="sc">~</span> h,</span>
+<span id="cb181-4"><a href="16.html#cb181-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> <span class="fu">binomial</span>(),</span>
+<span id="cb181-5"><a href="16.html#cb181-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> </span>
+<span id="cb181-6"><a href="16.html#cb181-6" aria-hidden="true" tabindex="-1"></a>      nhefs_censored <span class="sc">%&gt;%</span> </span>
+<span id="cb181-7"><a href="16.html#cb181-7" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(</span>
+<span id="cb181-8"><a href="16.html#cb181-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">highprice =</span> <span class="fu">as.double</span>(highprice) <span class="sc">-</span> <span class="dv">1</span>,</span>
+<span id="cb181-9"><a href="16.html#cb181-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">h =</span> wt82_71 <span class="sc">-</span> psi <span class="sc">*</span> qsmk</span>
+<span id="cb181-10"><a href="16.html#cb181-10" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb181-11"><a href="16.html#cb181-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">id =</span> seqn</span>
+<span id="cb181-12"><a href="16.html#cb181-12" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb181-13"><a href="16.html#cb181-13" aria-hidden="true" tabindex="-1"></a>    broom<span class="sc">::</span><span class="fu">tidy</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb181-14"><a href="16.html#cb181-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(term <span class="sc">==</span> <span class="st">&quot;h&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb181-15"><a href="16.html#cb181-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">transmute</span>(psi, <span class="at">alpha =</span> estimate, <span class="at">p_value =</span> p.value)</span>
+<span id="cb181-16"><a href="16.html#cb181-16" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>To estimate the ATE, use optimization to search for the value of <code>psi</code> with <code>alpha</code> value closest to 0.</p>
+<div class="sourceCode" id="cb182"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb182-1"><a href="16.html#cb182-1" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="cf">function</span>(psi) {</span>
+<span id="cb182-2"><a href="16.html#cb182-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">abs</span>(<span class="fu">g_est</span>(psi)<span class="sc">$</span>alpha)</span>
+<span id="cb182-3"><a href="16.html#cb182-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb182-4"><a href="16.html#cb182-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb182-5"><a href="16.html#cb182-5" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> <span class="fu">optimize</span>(f, <span class="at">interval =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">50</span>, <span class="dv">50</span>))</span>
+<span id="cb182-6"><a href="16.html#cb182-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb182-7"><a href="16.html#cb182-7" aria-hidden="true" tabindex="-1"></a>estimate <span class="ot">&lt;-</span> v<span class="sc">$</span>minimum</span>
+<span id="cb182-8"><a href="16.html#cb182-8" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(estimate, <span class="st">`</span><span class="at">abs(alpha)</span><span class="st">`</span> <span class="ot">=</span> v<span class="sc">$</span>objective) <span class="sc">%&gt;%</span> </span>
+<span id="cb182-9"><a href="16.html#cb182-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">nsmall =</span> <span class="dv">3</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+estimate
+</th>
+<th style="text-align:right;">
+abs(alpha)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+2.396
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+</tr>
+</tbody>
+</table>
+<p>Thus the estimate of the ATE is consistent with the value above.</p>
+<div class="sourceCode" id="cb183"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb183-1"><a href="16.html#cb183-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(estimate) <span class="sc">%&gt;%</span> </span>
+<span id="cb183-2"><a href="16.html#cb183-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">nsmall =</span> <span class="dv">1</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+estimate
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+2.4
+</td>
+</tr>
+</tbody>
+</table>
+<p>The method of section 14.6 to find a confidence interval for the ATE does not work in this case, due to the inability of reducing the p-value to below 0.05.</p>
+</div>
+<div id="the-three-instrumental-conditions-revisited" class="section level2 unnumbered hasAnchor">
+<h2>16.5 The three instrumental conditions revisited<a href="16.html#the-three-instrumental-conditions-revisited" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Use two-stage least-squares regression to calculate ATE with 95% confidence interval with <code>highprice</code> defined using <code>price</code>.</p>
+<div class="sourceCode" id="cb184"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb184-1"><a href="16.html#cb184-1" aria-hidden="true" tabindex="-1"></a>ate <span class="ot">&lt;-</span> <span class="cf">function</span>(price) {</span>
+<span id="cb184-2"><a href="16.html#cb184-2" aria-hidden="true" tabindex="-1"></a>  ivreg<span class="sc">::</span><span class="fu">ivreg</span>(</span>
+<span id="cb184-3"><a href="16.html#cb184-3" aria-hidden="true" tabindex="-1"></a>    wt82_71 <span class="sc">~</span> qsmk <span class="sc">|</span> highprice,</span>
+<span id="cb184-4"><a href="16.html#cb184-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> </span>
+<span id="cb184-5"><a href="16.html#cb184-5" aria-hidden="true" tabindex="-1"></a>      nhefs_censored <span class="sc">%&gt;%</span></span>
+<span id="cb184-6"><a href="16.html#cb184-6" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(</span>
+<span id="cb184-7"><a href="16.html#cb184-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">highprice =</span></span>
+<span id="cb184-8"><a href="16.html#cb184-8" aria-hidden="true" tabindex="-1"></a>          <span class="fu">case_when</span>(</span>
+<span id="cb184-9"><a href="16.html#cb184-9" aria-hidden="true" tabindex="-1"></a>            price82 <span class="sc">&lt;=</span> price <span class="sc">~</span> <span class="dv">0</span>,</span>
+<span id="cb184-10"><a href="16.html#cb184-10" aria-hidden="true" tabindex="-1"></a>            price82 <span class="sc">&gt;</span> price <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb184-11"><a href="16.html#cb184-11" aria-hidden="true" tabindex="-1"></a>            <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">NA_real_</span></span>
+<span id="cb184-12"><a href="16.html#cb184-12" aria-hidden="true" tabindex="-1"></a>          ) <span class="sc">%&gt;%</span> </span>
+<span id="cb184-13"><a href="16.html#cb184-13" aria-hidden="true" tabindex="-1"></a>          <span class="fu">as.factor</span>()</span>
+<span id="cb184-14"><a href="16.html#cb184-14" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb184-15"><a href="16.html#cb184-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb184-16"><a href="16.html#cb184-16" aria-hidden="true" tabindex="-1"></a>    broom<span class="sc">::</span><span class="fu">tidy</span>(<span class="at">conf.int =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb184-17"><a href="16.html#cb184-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(term <span class="sc">==</span> <span class="st">&quot;qsmk&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb184-18"><a href="16.html#cb184-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(estimate, <span class="at">conf_low =</span> conf.low, <span class="at">conf_high =</span> conf.high) <span class="sc">%&gt;%</span> </span>
+<span id="cb184-19"><a href="16.html#cb184-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add_column</span>(price, <span class="at">.before =</span> <span class="st">&quot;estimate&quot;</span>)</span>
+<span id="cb184-20"><a href="16.html#cb184-20" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Estimates of ATEs with 95% confidence intervals for different prices.</p>
+<div class="sourceCode" id="cb185"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb185-1"><a href="16.html#cb185-1" aria-hidden="true" tabindex="-1"></a><span class="fu">seq</span>(<span class="fl">1.6</span>, <span class="fl">1.9</span>, <span class="fl">0.1</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb185-2"><a href="16.html#cb185-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(ate) <span class="sc">%&gt;%</span> </span>
+<span id="cb185-3"><a href="16.html#cb185-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">price =</span> <span class="fu">str_c</span>(<span class="st">&quot;$&quot;</span>, <span class="fu">round_format</span>(price, <span class="at">nsmall =</span> <span class="dv">2</span>))) <span class="sc">%&gt;%</span> </span>
+<span id="cb185-4"><a href="16.html#cb185-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">nsmall =</span> <span class="dv">1</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+price
+</th>
+<th style="text-align:right;">
+estimate
+</th>
+<th style="text-align:right;">
+conf_low
+</th>
+<th style="text-align:right;">
+conf_high
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+$1.60
+</td>
+<td style="text-align:right;">
+41.3
+</td>
+<td style="text-align:right;">
+-282.3
+</td>
+<td style="text-align:right;">
+364.8
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+$1.70
+</td>
+<td style="text-align:right;">
+-40.9
+</td>
+<td style="text-align:right;">
+-409.2
+</td>
+<td style="text-align:right;">
+327.4
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+$1.80
+</td>
+<td style="text-align:right;">
+-21.1
+</td>
+<td style="text-align:right;">
+-76.9
+</td>
+<td style="text-align:right;">
+34.7
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+$1.90
+</td>
+<td style="text-align:right;">
+-12.8
+</td>
+<td style="text-align:right;">
+-59.2
+</td>
+<td style="text-align:right;">
+33.6
+</td>
+</tr>
+</tbody>
+</table>
+<p>The estimates, in kilograms, are too large to be plausible, and the confidence intervals are very large.</p>
+<p>Fit two-stage least-squares regression using variables and model from section 15.1. We will assume that <code>qsmk</code> is the only endogenous predictor variable.</p>
+<div class="sourceCode" id="cb186"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb186-1"><a href="16.html#cb186-1" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> </span>
+<span id="cb186-2"><a href="16.html#cb186-2" aria-hidden="true" tabindex="-1"></a>  ivreg<span class="sc">::</span><span class="fu">ivreg</span>(</span>
+<span id="cb186-3"><a href="16.html#cb186-3" aria-hidden="true" tabindex="-1"></a>    wt82_71 <span class="sc">~</span> sex <span class="sc">+</span> <span class="fu">poly</span>(age, <span class="dv">2</span>) <span class="sc">+</span> race <span class="sc">+</span> education <span class="sc">+</span> <span class="fu">poly</span>(wt71, <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb186-4"><a href="16.html#cb186-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">poly</span>(smokeintensity, <span class="dv">2</span>) <span class="sc">+</span> <span class="fu">poly</span>(smokeyrs, <span class="dv">2</span>) <span class="sc">+</span> active <span class="sc">+</span> exercise <span class="sc">|</span> </span>
+<span id="cb186-5"><a href="16.html#cb186-5" aria-hidden="true" tabindex="-1"></a>      qsmk <span class="sc">|</span> highprice,</span>
+<span id="cb186-6"><a href="16.html#cb186-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> nhefs_censored</span>
+<span id="cb186-7"><a href="16.html#cb186-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb186-8"><a href="16.html#cb186-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb186-9"><a href="16.html#cb186-9" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(fit)</span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Call:
+#&gt; ivreg::ivreg(formula = wt82_71 ~ sex + poly(age, 2) + race + 
+#&gt;     education + poly(wt71, 2) + poly(smokeintensity, 2) + poly(smokeyrs, 
+#&gt;     2) + active + exercise | qsmk | highprice, data = nhefs_censored)
+#&gt; 
+#&gt; Residuals:
+#&gt;      Min       1Q   Median       3Q      Max 
+#&gt; -43.7423  -4.5482  -0.4517   3.8464  47.2542 
+#&gt; 
+#&gt; Coefficients:
+#&gt;                           Estimate Std. Error t value Pr(&gt;|t|)   
+#&gt; (Intercept)                3.99398    7.80159   0.512   0.6088   
+#&gt; qsmk                      -3.13250   32.63876  -0.096   0.9236   
+#&gt; sex1                      -1.97116    2.75323  -0.716   0.4741   
+#&gt; poly(age, 2)1            -59.34351  112.31649  -0.528   0.5973   
+#&gt; poly(age, 2)2            -43.08971   26.53034  -1.624   0.1046   
+#&gt; race1                     -0.47187    5.03253  -0.094   0.9253   
+#&gt; education2                 0.60686    0.71879   0.844   0.3986   
+#&gt; education3                 0.60944    0.94965   0.642   0.5211   
+#&gt; education4                 1.62590    1.06644   1.525   0.1276   
+#&gt; education5                 0.46648    3.45391   0.135   0.8926   
+#&gt; poly(wt71, 2)1           -59.62715   21.53747  -2.769   0.0057 **
+#&gt; poly(wt71, 2)2            -9.39097   16.78443  -0.560   0.5759   
+#&gt; poly(smokeintensity, 2)1  -6.35880   69.69741  -0.091   0.9273   
+#&gt; poly(smokeintensity, 2)2  -0.02664   52.68866  -0.001   0.9996   
+#&gt; poly(smokeyrs, 2)1         0.03413   65.54988   0.001   0.9996   
+#&gt; poly(smokeyrs, 2)2        -0.80088   33.44159  -0.024   0.9809   
+#&gt; active1                   -0.97707    0.48369  -2.020   0.0436 * 
+#&gt; active2                   -0.20673    1.20222  -0.172   0.8635   
+#&gt; exercise1                  0.53695    2.28816   0.235   0.8145   
+#&gt; exercise2                  0.63151    2.39327   0.264   0.7919   
+#&gt; 
+#&gt; Diagnostic tests:
+#&gt;                   df1  df2 statistic p-value
+#&gt; Weak instruments    1 1456     0.327   0.568
+#&gt; Wu-Hausman          1 1455     0.048   0.826
+#&gt; Sargan              0   NA        NA      NA
+#&gt; 
+#&gt; Residual standard error: 7.913 on 1456 degrees of freedom
+#&gt; Multiple R-Squared: 0.01914, Adjusted R-squared: 0.006341 
+#&gt; Wald test: 8.562 on 19 and 1456 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>The weak instruments diagnostic test again indicates that <code>highprice</code> does not appear to be a good instrumental value.</p>
+<p>Estimate of ATE with 95% confidence interval.</p>
+<div class="sourceCode" id="cb188"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb188-1"><a href="16.html#cb188-1" aria-hidden="true" tabindex="-1"></a>broom<span class="sc">::</span><span class="fu">tidy</span>(fit, <span class="at">conf.int =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb188-2"><a href="16.html#cb188-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(term <span class="sc">==</span> <span class="st">&quot;qsmk&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb188-3"><a href="16.html#cb188-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(estimate, <span class="at">conf_low =</span> conf.low, <span class="at">conf_high =</span> conf.high) <span class="sc">%&gt;%</span> </span>
+<span id="cb188-4"><a href="16.html#cb188-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">nsmall =</span> <span class="dv">1</span>)</span></code></pre></div>
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+estimate
+</th>
+<th style="text-align:right;">
+conf_low
+</th>
+<th style="text-align:right;">
+conf_high
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+-3.1
+</td>
+<td style="text-align:right;">
+-67.2
+</td>
+<td style="text-align:right;">
+60.9
+</td>
+</tr>
+</tbody>
+</table>
+<p>The confidence interval is even larger than with the earlier two-stage least-squares regression.</p>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="15.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="17.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": null,
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/behrman/ci-wi/edit/master/16.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": null,
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "section"
+}
+});
+});
+</script>
+
+</body>
+
+</html>

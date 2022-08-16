@@ -1,0 +1,816 @@
+---
+title: "17 Causal survival analysis"
+author: "Bill Behrman"
+date: "`r Sys.Date()`"
+output: 
+  github_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE, warning=FALSE}
+# Packages
+library(tidyverse)
+
+# Parameters
+  # NHEFS data
+file_nhefs <- here::here("data/nhefs.rds")
+  # Common code
+file_common <- here::here("_common.R")
+
+# Round and format vector
+round_format <- function(x, nsmall = 2, ...) {
+  format(round(x, digits = nsmall), nsmall = nsmall, ...)
+}
+# Print tibble
+kable <- function(x, cols = everything(), nsmall = 2, align = "r", ...) {
+  x %>%
+    mutate(across({{cols}}, round_format, nsmall = nsmall)) %>%
+    knitr::kable(align = align, ...)
+}
+# Print min, mean, and max of vector
+kable_summary <- function(x, nsmall = 2, ...) {
+  tibble(min = min(x), mean = mean(x), max = max(x)) %>%
+    kable(nsmall = nsmall, ...)
+}
+
+#===============================================================================
+
+# Run common code
+source(file_common)
+
+# NHEFS data with `qsmk` as a double
+nhefs <- 
+  read_rds(file_nhefs) %>% 
+  mutate(qsmk = as.double(qsmk) - 1)
+```
+
+## 17.1 Hazards and risks
+
+In the following we will use the following variables:
+
+* `dadth`: Day of death
+* `death`: Death by 1992
+  * 0: No
+  * 1: Yes
+* `modth`: Month of death
+* `yrdth`: Year of death
+
+Number of people in dataset.
+
+```{r}
+nrow(nhefs)
+```
+
+Range of ages.
+
+```{r}
+range(nhefs$age)
+```
+
+The number of people who died by the end of 1992.
+
+```{r}
+v <- 
+  nhefs %>% 
+  count(death)
+
+knitr::kable(v)
+```
+
+Of the `r nrow(nhefs)` individuals in the dataset, `r v %>% filter(death == "1") %>% pull(n)` died before the end of 1992, and the remaining `r v %>% filter(death == "0") %>% pull(n)` survived.
+
+The variables `death`, `yrdth`, `modth`, and `dadth`.
+
+```{r}
+nhefs %>% 
+  count(death, !is.na(yrdth), !is.na(modth), !is.na(dadth))
+```
+
+Note that four individuals have months and days of death but no year. They are classified by the `death` variable as having not died. For the following, we will assume that the `death` variable is correct.
+
+The follow-up period began on January 1, 1983 and lasted through December 31, 1992. For those who died, we will add the variable `time_death` for the month of the follow-up in which they died, ranging from 1 for January 1983 to 120 for December 1992.
+
+```{r}
+nhefs <- 
+  nhefs %>% 
+  mutate(
+    time_death = if_else(death == "1", 12 * (yrdth - 83) + modth, NA_real_)
+  )
+```
+
+Range of values for `time_death`.
+
+```{r}
+range(nhefs$time_death, na.rm = TRUE)
+```
+
+Number of individuals who died by whether or not they quit smoking (`qsmk`).
+
+```{r}
+v <- 
+  nhefs %>% 
+  filter(!is.na(time_death)) %>% 
+  count(qsmk)
+
+knitr::kable(v)
+```
+
+Of the `r sum(v$n)` individuals who died, `r v %>% filter(qsmk == 0) %>% pull(n)` did not quit smoking and `r v %>% filter(qsmk == 1) %>% pull(n)` did quit smoking.
+
+For each treatment group (`qsmk`) and each follow-up month, calculate the cumulative deaths (`deaths_cum`), the number who survived (`survived`), and the proportion who survived (`survival`).
+
+```{r}
+time_max <- max(nhefs$time_death, na.rm = TRUE)
+
+survival_1 <- 
+  expand_grid(qsmk = 0:1, time = 0:time_max) %>% 
+  left_join(
+    nhefs %>% 
+      filter(death == "1") %>% 
+      count(qsmk, time = time_death, name = "deaths"),
+    by = c("qsmk", "time")
+  ) %>% 
+  replace_na(list(deaths = 0)) %>% 
+  group_by(qsmk) %>% 
+  mutate(
+    deaths_cum = cumsum(deaths),
+    survived = sum(nhefs$qsmk == first(qsmk)) - deaths_cum,
+    survival = survived / sum(nhefs$qsmk == first(qsmk))
+  ) %>% 
+  ungroup()
+
+survival_1
+```
+
+Figure 17.1.
+
+```{r}
+survival_plot_details <- function(y_quitters = 0.74) {
+  list(
+    annotate(
+      "text",
+      x = 119,
+      y = c(0.87, y_quitters),
+      hjust = 1,
+      label = c("Non-quitters", "Quitters")
+    ),
+    coord_cartesian(ylim = c(0.5, 1)),
+    scale_x_continuous(breaks = scales::breaks_width(20)),
+    theme(legend.position = "none"),
+    labs(
+      x = "Month of follow-up",
+      y = "Survival probability"
+    )
+  )
+}
+
+survival_1 %>% 
+  ggplot(aes(time, survival, color = as.factor(qsmk))) +
+  geom_line() +
+  survival_plot_details() +
+  labs(title = "Figure 17.1")
+```
+
+Log-rank test to compare survival curves.
+
+```{r}
+test <- 
+  nhefs %>% 
+  transmute(
+    qsmk,
+    time = replace_na(time_death, replace = time_max),
+    event = as.double(death) - 1
+  )  %>% 
+  survival::survdiff(
+    survival::Surv(time = time, event = event) ~ qsmk,
+    data = .
+  )
+
+broom::glance(test) %>% 
+  select(p_value = p.value) %>% 
+  kable(nsmall = 3)
+```
+
+Survival at 120 months.
+
+```{r}
+v <- 
+  survival_1 %>% 
+  filter(time == 120) %>% 
+  select(qsmk, survival)
+
+v %>% 
+  kable(cols = survival, nsmall = 3)
+```
+
+Survival at 120 months was `r round_format(100 * (v %>% filter(qsmk == "0") %>% pull(survival)), nsmall = 1)`% among non-quitters and `r round_format(100 * (v %>% filter(qsmk == "1") %>% pull(survival)), nsmall = 1)`% among quitters. The risk at 120 months was `r round_format(100 * (1 - (v %>% filter(qsmk == "0") %>% pull(survival))), nsmall = 1)`% among non-quitters and `r round_format(100 * (1 - (v %>% filter(qsmk == "1") %>% pull(survival))), nsmall = 1)`% among quitters.
+
+Hazard at 120 months.
+
+```{r}
+v <- 
+  survival_1 %>% 
+  mutate(
+    survived_prev = lag(survived),
+    hazard = deaths / survived_prev
+  ) %>% 
+  filter(time == 120) %>% 
+  select(qsmk, time, deaths, survived_prev, hazard)
+
+v %>% 
+  kable(cols = hazard, nsmall = 4)
+```
+
+The hazard at 120 months was `r round_format(100 * (v %>% filter(qsmk == "0") %>% pull(hazard)), nsmall = 2)`% among non-quitters and `r 100 * (v %>% filter(qsmk == "1") %>% pull(hazard))`% among quitters.
+
+## 17.2 From hazards to risks
+
+Time-event tibble for person in person-time format.
+
+```{r}
+time_event <- function(death, time_death) {
+  stopifnot(death %in% c("0", "1"))
+  if (death == "0") {
+    tibble(time = seq_len(time_max) - 1, event = 0)
+  } else if (death == "1") {
+    tibble(
+      time = seq_len(time_death) - 1,
+      event = rep(0:1, c(time_death - 1, 1))
+    )
+  }
+}
+```
+
+NHEFS dataset in person-time format.
+
+```{r}
+nhefs_pt <- 
+  nhefs %>% 
+  select(seqn, qsmk, death, time_death) %>% 
+  rowwise() %>% 
+  mutate(time_event = list(time_event(death, time_death))) %>% 
+  unnest(time_event)
+```
+
+Number of rows in `nhefs_pt`.
+
+```{r}
+nrow(nhefs_pt)
+```
+
+Fit logistic regression for hazards.
+
+```{r}
+fit <- 
+  glm(
+    event ~ poly(time, 2) + qsmk * poly(time, 2),
+    family = binomial(),
+    data = nhefs_pt
+  )
+
+broom::tidy(fit)
+```
+
+Figure 17.4.
+
+```{r}
+survival_2 <- 
+  expand_grid(qsmk = 0:1, time = 0:time_max) %>% 
+  group_by(qsmk) %>% 
+  mutate(
+    survival = 
+      cumprod(
+        1 - predict(fit, newdata = tibble(qsmk, time), type = "response")
+      ) %>% 
+      lag(default = 1)
+  ) %>% 
+  ungroup()
+
+survival_2 %>% 
+  ggplot(aes(time, survival, color = as.factor(qsmk))) +
+  geom_line() +
+  survival_plot_details() +
+  labs(title = "Figure 17.4")
+```
+
+Superposition of Figures 17.1 and 17.4.
+
+```{r}
+ggplot(mapping = aes(time, survival)) +
+  geom_line(aes(group = qsmk), data = survival_1, color = "grey60") +
+  geom_line(aes(color = as.factor(qsmk)), data = survival_2) +
+  survival_plot_details() + 
+  labs(title = "Superposition of Figures 17.1 and 17.4")
+```
+
+## 17.4 IP weighting of marginal structural models
+
+Stabilized IP weights for treatment.
+
+```{r}
+ip_numerator <- 
+  case_when(
+    nhefs$qsmk == 0 ~ 1 - mean(nhefs$qsmk),
+    nhefs$qsmk == 1 ~ mean(nhefs$qsmk),
+    TRUE ~ NA_real_
+  )
+
+fit_denominator <- 
+  glm(
+    qsmk ~ sex + poly(age, 2) + race + education + poly(wt71, 2) +
+      poly(smokeintensity, 2) + poly(smokeyrs, 2) + active + exercise,
+    family = binomial(),
+    data = nhefs
+  )
+
+ip_denominator <- 
+  case_when(
+    nhefs$qsmk == 0 ~ 1 - predict(fit_denominator, type = "response"),
+    nhefs$qsmk == 1 ~ predict(fit_denominator, type = "response"),
+    TRUE ~ NA_real_
+  )
+
+ip_sw_a <- ip_numerator / ip_denominator
+
+kable_summary(ip_sw_a)
+```
+
+NHEFS dataset with weights in person-time format.
+
+```{r}
+nhefs_pt <- 
+  nhefs %>% 
+  transmute(seqn, qsmk, weight = ip_sw_a, death, time_death) %>% 
+  rowwise() %>% 
+  mutate(time_event = list(time_event(death, time_death))) %>% 
+  unnest(time_event)
+```
+
+Fit logistic regression for hazards.
+
+```{r, warning=FALSE}
+fit <- 
+  glm(
+    event ~ poly(time, 2) + qsmk * poly(time, 2),
+    family = binomial(),
+    data = nhefs_pt,
+    weights = weight
+  )
+
+broom::tidy(fit)
+```
+
+Figure 17.6.
+
+```{r}
+survival_3 <- 
+  expand_grid(qsmk = 0:1, time = 0:time_max) %>% 
+  group_by(qsmk) %>% 
+  mutate(
+    survival = 
+      cumprod(
+        1 - predict(fit, newdata = tibble(qsmk, time), type = "response")
+      ) %>% 
+      lag(default = 1)
+  ) %>%
+  ungroup()
+
+survival_3 %>% 
+  ggplot(aes(time, survival, color = as.factor(qsmk))) +
+  geom_line() +
+  survival_plot_details(y_quitters = 0.78) +
+  labs(title = "Figure 17.6")
+```
+
+Superposition of Figures 17.4 and 17.6.
+
+```{r}
+ggplot(mapping = aes(time, survival)) +
+  geom_line(aes(group = qsmk), data = survival_2, color = "grey60") +
+  geom_line(aes(color = as.factor(qsmk)), data = survival_3) +
+  survival_plot_details() + 
+  labs(title = "Superposition of Figures 17.4 and 17.6")
+```
+
+Survival at 120 months.
+
+```{r}
+v <- 
+  survival_3 %>% 
+  filter(time == 120) %>% 
+  select(qsmk, survival)
+
+v %>% 
+  kable(cols = survival, nsmall = 3)
+```
+
+Survival at 120 months was `r round_format(100 * (v %>% filter(qsmk == 0) %>% pull(survival)), nsmall = 1)`% among non-quitters and `r round_format(100 * (v %>% filter(qsmk == 1) %>% pull(survival)), nsmall = 1)`% among quitters for a difference of `r round_format(100 * ((v %>% filter(qsmk == 1) %>% pull(survival)) - (v %>% filter(qsmk == 0) %>% pull(survival))), nsmall = 1)`%.
+
+Calculate survival difference at 120 months and the largest absolute value of the differences for all months. If `boot = TRUE` (the default), use bootstrap sample of data. If `boot = FALSE`, use full dataset.
+
+```{r}
+survival_diff <- function(boot = TRUE) {
+  data <-
+    nhefs %>%
+    transmute(seqn, qsmk, weight = ip_sw_a, death, time_death) %>%
+    {
+      if (isTRUE(boot)) {
+        slice_sample(., prop = 1, replace = TRUE)
+      } else {
+        .
+      }
+    } %>%
+    rowwise() %>%
+    mutate(time_event = list(time_event(death, time_death))) %>%
+    unnest(time_event)
+
+  fit <-
+    glm(
+      event ~ poly(time, 2) + qsmk * poly(time, 2),
+      family = binomial(),
+      data = data,
+      weights = weight
+    )
+
+  expand_grid(qsmk = 0:1, time = seq_len(time_max) - 1) %>%
+    group_by(qsmk) %>%
+    mutate(
+      survival =
+        cumprod(
+          1 - predict(fit, newdata = tibble(qsmk, time), type = "response")
+        )
+    ) %>%
+    ungroup() %>%
+    group_by(time) %>%
+    summarize(diff = survival[qsmk == 1] - survival[qsmk == 0]) %>%
+    summarize(
+      last = last(diff),
+      max = max(abs(diff))
+    )
+}
+```
+
+Perform bootstrap resampling.
+
+```{r, warning=FALSE}
+set.seed(231)
+
+n_boot <- 500
+
+boot_out <-
+  seq_len(n_boot) %>%
+  map_dfr(~ survival_diff())
+```
+
+Survival difference at 120 months with 95% confidence interval calculated using bootstrap percentile method.
+
+```{r, warning=FALSE}
+v <-
+  tibble(
+    estimate = survival_diff(boot = FALSE)$last,
+    conf_low = quantile(boot_out$last, probs = 0.025),
+    conf_high = quantile(boot_out$last, probs = 0.975)
+  )
+
+kable(v, nsmall = 3)
+```
+
+The survival difference at 120 months was `r round_format(100 * v$estimate, nsmall = 1)`% with a 95% confidence interval from `r round_format(100 * v$conf_low, nsmall = 1)`% to `r round_format(100 * v$conf_high, nsmall = 1)`% based on `r n_boot` bootstrap samples.
+
+The largest absolute value of the differences for all months with 95% confidence interval calculated using bootstrap percentile method. Note that this a different measure than the one used in the book.
+
+```{r, warning=FALSE}
+v <-
+  tibble(
+    estimate = survival_diff(boot = FALSE)$max,
+    conf_low = quantile(boot_out$max, probs = 0.025),
+    conf_high = quantile(boot_out$max, probs = 0.975)
+  )
+
+kable(v, nsmall = 3)
+```
+
+The largest absolute value of the differences for all months was `r round_format(100 * v$estimate, nsmall = 1)`% with a 95% confidence interval from `r round_format(100 * v$conf_low, nsmall = 1)`% to `r round_format(100 * v$conf_high, nsmall = 1)`% based on `r n_boot` bootstrap samples.
+
+## 17.5 The parametric g-formula
+
+NHEFS dataset in person-time format.
+
+```{r}
+nhefs_pt <-
+  nhefs %>%
+  select(
+    qsmk, death, sex, age, race, education, wt71, smokeintensity,
+    smkintensity82_71, smokeyrs, active, exercise, time_death
+  ) %>%
+  rowwise() %>%
+  mutate(time_event = list(time_event(death, time_death))) %>%
+  unnest(time_event)
+```
+
+Fit logistic regression for hazards.
+
+```{r}
+fit <-
+  glm(
+    event ~ poly(time, 2) + qsmk * poly(time, 2) + sex + poly(age, 2) + race +
+      education + poly(wt71, 2) + poly(smokeintensity, 2) + smkintensity82_71 +
+      poly(smokeyrs, 2) + active + exercise,
+    family = binomial(),
+    data = nhefs_pt
+  )
+
+broom::tidy(fit)
+```
+
+Calculate survival curve for individual.
+
+```{r}
+time_survival <- function(fit, data, qsmk) {
+  tibble(
+    time = 0:time_max,
+    survival =
+      cumprod(
+        1 - predict(fit, newdata = tibble(data, qsmk, time), type = "response")
+      ) %>%
+      lag(default = 1)
+  )
+}
+```
+
+Calculate survival curves for each individual and then average.
+
+```{r}
+survival_4 <-
+  nhefs %>%
+  select(
+    seqn, sex, age, race, education, wt71, smokeintensity, smkintensity82_71,
+    smokeyrs, active, exercise
+  ) %>%
+  expand_grid(qsmk = 0:1) %>%
+  nest(data = !c(seqn, qsmk)) %>%
+  rowwise() %>%
+  transmute(
+    qsmk,
+    time_survival = list(time_survival(fit = fit, data = data, qsmk = qsmk))
+  ) %>%
+  unnest(time_survival) %>%
+  group_by(qsmk, time) %>%
+  summarize(across(survival, mean)) %>%
+  ungroup()
+```
+
+Figure 17.7.
+
+```{r}
+survival_4 %>%
+  ggplot(aes(time, survival, color = as.factor(qsmk))) +
+  geom_line() +
+  survival_plot_details(y_quitters = 0.78) +
+  labs(title = "Figure 17.7")
+```
+
+Superposition of Figures 17.6 and 17.7.
+
+```{r}
+ggplot(mapping = aes(time, survival)) +
+  geom_line(aes(group = qsmk), data = survival_3, color = "grey60") +
+  geom_line(aes(color = as.factor(qsmk)), data = survival_4) +
+  survival_plot_details(y_quitters = 0.78) +
+  labs(title = "Superposition of Figures 17.6 and 17.7")
+```
+
+The survival curves from the two figures are coincident.
+
+Survival at 120 months.
+
+```{r}
+v <-
+  survival_4 %>%
+  filter(time == 120) %>%
+  select(qsmk, survival)
+
+v %>%
+  kable(cols = survival, nsmall = 3)
+```
+
+Survival at 120 months was `r round_format(100 * (v %>% filter(qsmk == 0) %>% pull(survival)), nsmall = 1)`% among non-quitters and `r round_format(100 * (v %>% filter(qsmk == 1) %>% pull(survival)), nsmall = 1)`% among quitters for a difference of `r round_format(100 * ((v %>% filter(qsmk == 1) %>% pull(survival)) - (v %>% filter(qsmk == 0) %>% pull(survival))), nsmall = 1)`% (rounded from `r round_format(100 * ((v %>% filter(qsmk == 1) %>% pull(survival)) - (v %>% filter(qsmk == 0) %>% pull(survival))), nsmall = 3)`%).
+
+Calculate survival difference at 120 months and the largest absolute value of the differences for all months. If `boot = TRUE` (the default), use bootstrap sample of data. If `boot = FALSE`, use full dataset.
+
+```{r}
+survival_diff <- function(boot = TRUE) {
+  v <-
+    nhefs %>%
+    select(
+      qsmk, death, sex, age, race, education, wt71, smokeintensity,
+      smkintensity82_71, smokeyrs, active, exercise, time_death
+    ) %>%
+    {
+      if (isTRUE(boot)) {
+        slice_sample(., prop = 1, replace = TRUE)
+      } else {
+        .
+      }
+    } %>%
+    mutate(row = row_number())
+
+  data <-
+    v %>%
+    rowwise() %>%
+    mutate(time_event = list(time_event(death, time_death))) %>%
+    unnest(time_event)
+
+  fit <-
+    glm(
+      event ~ poly(time, 2) + qsmk * poly(time, 2) + sex + poly(age, 2) + race +
+        education + poly(wt71, 2) + poly(smokeintensity, 2) +
+        smkintensity82_71 + poly(smokeyrs, 2) + active + exercise,
+      family = binomial(),
+      data = data
+    )
+
+  v %>%
+    select(!c(qsmk, death, time_death)) %>%
+    expand_grid(qsmk = 0:1) %>%
+    nest(data = !c(row, qsmk)) %>%
+    rowwise() %>%
+    transmute(
+      qsmk,
+      time_survival = list(time_survival(fit = fit, data = data, qsmk = qsmk))
+    ) %>%
+    unnest(time_survival) %>%
+    group_by(qsmk, time) %>%
+    summarize(across(survival, mean)) %>%
+    ungroup() %>%
+    group_by(time) %>%
+    summarize(diff = survival[qsmk == 1] - survival[qsmk == 0]) %>%
+    summarize(
+      last = last(diff),
+      max = max(abs(diff))
+    )
+}
+```
+
+Perform bootstrap resampling.
+
+```{r}
+set.seed(231)
+
+n_boot <- 100
+
+boot_out <-
+  seq_len(n_boot) %>%
+  map_dfr(~ survival_diff())
+```
+
+Survival difference at 120 months with 95% confidence interval calculated using bootstrap percentile method.
+
+```{r}
+v <-
+  tibble(
+    estimate = survival_diff(boot = FALSE)$last,
+    conf_low = quantile(boot_out$last, probs = 0.025),
+    conf_high = quantile(boot_out$last, probs = 0.975)
+  )
+
+kable(v, nsmall = 3)
+```
+
+The survival difference at 120 months was `r round_format(100 * v$estimate, nsmall = 1)`% with a 95% confidence interval from `r round_format(100 * v$conf_low, nsmall = 1)`% to `r round_format(100 * v$conf_high, nsmall = 1)`% based on `r n_boot` bootstrap samples.
+
+The largest absolute value of the differences for all months with 95% confidence interval calculated using bootstrap percentile method. Note that this a different measure than the one used in the book.
+
+```{r}
+v <-
+  tibble(
+    estimate = survival_diff(boot = FALSE)$max,
+    conf_low = quantile(boot_out$max, probs = 0.025),
+    conf_high = quantile(boot_out$max, probs = 0.975)
+  )
+
+kable(v, nsmall = 3)
+```
+
+The largest absolute value of the differences for all months was `r round_format(100 * v$estimate, nsmall = 1)`% with a 95% confidence interval from `r round_format(100 * v$conf_low, nsmall = 1)`% to `r round_format(100 * v$conf_high, nsmall = 1)`% based on `r n_boot` bootstrap samples.
+
+## 17.6 G-estimation of structural nested models
+
+Fit logistic regression for treatment.
+
+```{r}
+fit <- 
+  glm(
+    qsmk ~ sex + poly(age, 2) + race + education + poly(wt71, 2) +
+      poly(smokeintensity, 2) + poly(smokeyrs, 2) + active + exercise,
+    family = binomial(),
+    data = nhefs
+  )
+```
+
+Predict treatment and restrict to individuals who died during follow-up.
+
+```{r}
+nhefs_died <- 
+  nhefs %>% 
+  mutate(qsmk_pred = predict(fit, type = "response")) %>% 
+  drop_na(time_death) %>% 
+  select(qsmk, time_death, qsmk_pred)
+```
+
+For measure of change in individual's survival time attributable to treatment (`psi`), calculate score test statistic.
+
+```{r}
+g_est <- function(psi) {
+  nhefs_died %>% 
+    mutate(
+      delta =
+        (qsmk == 0 & time_death * exp(-psi) <= time_max) |
+        (qsmk == 1 & time_death * exp(psi) <= time_max),
+      x = delta * (qsmk - qsmk_pred)
+    ) %>% 
+    summarize(u = sum(x)^2 / ((n() - 1) * var(x))) %>%  
+    pull(u)
+}
+```
+
+95% quantile of chi-squared distribution with 1 degree of freedom.
+
+```{r}
+q_0.95 <- qchisq(p = 0.95, df = 1)
+
+q_0.95
+```
+
+Score test statistic as a function of `psi`.
+
+```{r}
+v <- 
+  tibble(
+    psi = seq(-0.3, 0.4, 0.001),
+    u = map_dbl(psi, g_est)
+  )
+
+v %>% 
+  ggplot(aes(psi, u)) +
+  geom_line() +
+  geom_hline(yintercept = q_0.95, color = "red") +
+  scale_x_continuous(breaks = scales::breaks_width(0.1)) +
+  labs(
+    title = "Score test statistic as a function of ψ",
+    subtitle = 
+      "Red line indicates 95% quantile of chi-squared distribution with 1 degree of freedom",
+    x = "ψ",
+    y = "Score test statistic"
+  )
+```
+
+The plot appears to be step function, perhaps as a result of individuals being censored depending upon the value of `psi`.
+
+The minimum of the plot.
+
+```{r}
+v %>% 
+  filter(u == min(u))
+```
+
+All of the values of `psi` from `r round_format(v %>% filter(u == min(u)) %>% pull(psi) %>% min(), nsmall = 3)` to `r round_format(v %>% filter(u == min(u)) %>% pull(psi) %>% max(), nsmall = 3)` have the same minimum value for the score test statistic. We'll choose as our estimate the middle of this range.
+
+```{r}
+estimate <- 
+  v %>% 
+  filter(u == min(u)) %>% 
+  summarize(estimate = mean(range(psi)))
+```
+
+Calculate 95% confidence interval by finding points where plot crosses the red line.
+
+```{r}
+conf_low <- 
+  tibble(
+    psi = seq(-0.25, -0.2, 0.0001),
+    u = map_dbl(psi, g_est)
+  ) %>% 
+  filter((u >= q_0.95 & lead(u) < q_0.95) | (u < q_0.95 & lag(u) >= q_0.95)) %>% 
+  summarize(conf_low = mean(range(psi)))
+
+conf_high <- 
+  tibble(
+    psi = seq(0.3, 0.35, 0.0001),
+    u = map_dbl(psi, g_est)
+  ) %>% 
+  filter((u < q_0.95 & lead(u) >= q_0.95) | (u >= q_0.95 & lag(u) < q_0.95)) %>% 
+  summarize(conf_high = mean(range(psi)))
+```
+
+Estimate of `psi` with 95% confidence interval.
+
+```{r}
+bind_cols(estimate, conf_low, conf_high) %>% 
+  kable(nsmall = 3)
+```
+

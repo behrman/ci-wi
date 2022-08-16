@@ -1,0 +1,701 @@
+
+# 12 IP weighting and marginal structural models {-}
+
+```{r message=FALSE, warning=FALSE}
+# Packages
+library(tidyverse)
+
+# Parameters
+  # NHEFS data
+file_nhefs <- here::here("data/nhefs.rds")
+
+# Round and format vector
+round_format <- function(x, nsmall = 2, ...) {
+  format(round(x, digits = nsmall), nsmall = nsmall, ...)
+}
+# Print tibble
+kable <- function(x, cols = where(is.double), nsmall = 2, align = "r", ...) {
+  x %>%
+    mutate(across({{cols}}, round_format, nsmall = nsmall)) %>%
+    knitr::kable(align = align, ...) %>% 
+    kableExtra::kable_styling(full_width = FALSE, position = "left")
+}
+# Print min, mean, and max of vector
+kable_summary <- function(x, nsmall = 2, ...) {
+  tibble(min = min(x), mean = mean(x), max = max(x)) %>%
+    kable(nsmall = nsmall, ...)
+}
+
+#===============================================================================
+
+# NHEFS data
+nhefs <- read_rds(file_nhefs)
+
+# NHEFS censored for those with weight measurements in 1982
+nhefs_censored <- 
+  nhefs %>% 
+  drop_na(wt82, wt82_71)
+```
+
+## 12.1 The causal question {-}
+
+The data are from the [National Health and Nutrition Examination Survey 1 Epidemiologic Follow-up Study](https://wwwn.cdc.gov/nchs/nhanes/nhefs/) (NHEFS). The data are drawn from two questionnaires, one taken in 1971 and the other in 1982. Below we will be using these variables:
+
+* `active`: In your usual day, how active are you? in 1971
+  * 0: Very active
+  * 1: Moderately active
+  * 2: Inactive
+* `age`: Age in 1971
+* `death`: Death by 1992
+  * 0: No
+  * 1: Yes
+* `education`: Amount of education by 1971
+  * 1: 8th grade or less
+  * 2: High school dropout
+  * 3: High school
+  * 4: College dropout
+  * 5: College or more
+* `exercise`: In recreation, how much exercise? in 1971
+  * 0: Much exercise
+  * 1: Moderate exercise
+  * 2: Little or no exercise
+* `qsmk`: Quit smoking between 1971 and 1982 questionnaires
+  * 0: No
+  * 1: Yes
+* `race`: Race in 1971
+  * 0: White
+  * 1: Black or other
+* `sex`: Sex
+  * 0: Male
+  * 1: Female
+* `smokeintensity`: Number of cigarettes smoked per day in 1971
+* `smokeintensity82_71`: Increase in number of cigarettes smoked per day between 1971 and 1982
+* `smokeyrs`: Years of smoking
+* `wt71`: Weight in 1971 (kilograms)
+* `wt82`: Weight in 1982 (kilograms)
+* `wt82_71`: Weight change between 1971 and 1982 (kilograms)
+
+The causal question is: What is the average causal effect of smoking cessation (`qsmk`) on weight gain (`wt82_71`)?
+
+In the following, we will examine the censored dataset of those with weight measurements in 1982. Number of people in dataset.
+
+```{r}
+nrow(nhefs_censored)
+```
+
+Range of ages.
+
+```{r}
+range(nhefs_censored$age)
+```
+
+Average weight gains in quitters and non-quitters.
+
+```{r}
+v <- 
+  nhefs_censored %>% 
+  group_by(qsmk) %>% 
+  summarize(across(wt82_71, mean))
+
+kable(v, nsmall = 1)
+```
+
+The average weight gain was `r round_format(v %>% filter(qsmk == "0") %>% pull(wt82_71), nsmall = 1)` kg in non-quitters and `r round_format(v %>% filter(qsmk == "1") %>% pull(wt82_71), nsmall = 1)` kg in quitters.
+
+Create a simple linear model to get an estimate the difference in average weight gains with a 95% confidence interval.
+
+```{r}
+fit <- lm(wt82_71 ~ qsmk, data = nhefs_censored)
+
+broom::tidy(fit, conf.int = TRUE) %>% 
+  filter(term == "qsmk1") %>% 
+  select(estimate, conf_low = conf.low, conf_high = conf.high) %>% 
+  kable(nsmall = 1)
+```
+
+Table 12.1.
+
+```{r}
+var_descriptions <- 
+  c(
+    age = "Age (years)",
+    male = "Men (%)",
+    white = "White (%)",
+    university = "University (%)",
+    wt71 = "Weight (kg)",
+    smokeintensity = "Cigarettes per day",
+    smokeyrs = "Years smoking",
+    little_exercise = "Little exercise (%)",
+    inactive = "Inactive life (%)"
+  )
+
+nhefs_censored %>% 
+  transmute(
+    qsmk,
+    age,
+    male = sex == "0",
+    white = race == "0",
+    university = education == "5",
+    wt71,
+    smokeintensity,
+    smokeyrs,
+    little_exercise = exercise == "2",
+    inactive = active == "2"
+  ) %>% 
+  group_by(qsmk) %>% 
+  summarize(across(everything(), mean)) %>% 
+  mutate(
+    across(c(male, white, university, little_exercise, inactive), ~ 100 * .)
+  ) %>% 
+  pivot_longer(cols = !qsmk, names_to = "Mean baseline characteristics") %>% 
+  pivot_wider(names_from = qsmk, names_prefix = "A = ") %>% 
+  mutate(across(`Mean baseline characteristics`, ~ var_descriptions[.])) %>% 
+  relocate(`A = 0`, .after = `A = 1`) %>%
+  kable(nsmall = 1, align = "lrr")
+```
+
+## 12.2 Estimating IP weights via modeling {-}
+
+Fit logistic regression model for propensity scores.
+
+```{r}
+fit <- 
+  glm(
+    qsmk ~ sex + poly(age, 2) + race + education + poly(wt71, 2) +
+      poly(smokeintensity, 2) + poly(smokeyrs, 2) + active + exercise,
+    family = binomial(),
+    data = nhefs_censored
+  )
+```
+
+Non-stabilized IP weights for treatment.
+
+```{r}
+ip_w_a <- 
+  case_when(
+    nhefs_censored$qsmk == "0" ~ 1 / (1 - predict(fit, type = "response")),
+    nhefs_censored$qsmk == "1" ~ 1 / predict(fit, type = "response"),
+    TRUE ~ NA_real_
+  )
+
+kable_summary(ip_w_a)
+```
+
+Estimate average treatment effect (ATE) using weighted least squares. This is a valid method for estimating the ATE but not its standard error.
+
+```{r}
+fit_lm <- lm(wt82_71 ~ qsmk, data = nhefs_censored, weights = ip_w_a)
+
+broom::tidy(fit_lm)
+```
+
+Estimate ATE and its standard error using generalized estimating equation model.
+
+```{r}
+fit_geeglm <- 
+  geepack::geeglm(
+    wt82_71 ~ qsmk, data = nhefs_censored, weights = ip_w_a, id = seqn
+  )
+
+broom::tidy(fit_geeglm)
+```
+
+The two estimates for the ATE are very close.
+
+```{r}
+ate_lm <- coef(fit_lm)[["qsmk1"]]
+ate_geeglm <- coef(fit_geeglm)[["qsmk1"]]
+
+ate_lm - ate_geeglm
+```
+
+Estimate of ATE with 95% confidence interval.
+
+```{r}
+v <- 
+  broom::tidy(fit_geeglm, conf.int = TRUE) %>% 
+  filter(term == "qsmk1") %>% 
+  select(estimate, conf_low = conf.low, conf_high = conf.high)
+
+kable(v, nsmall = 1)
+```
+
+```{r, echo=FALSE}
+v %>% 
+  save_result(
+    file = "data/ate.rds",
+    section = "12.2",
+    method = "IP weighting - Non-stabilized",
+    dataset = "Censored"
+  )
+```
+
+Plot treatment levels for each confounder.
+
+```{r}
+plot_treatment <- function(var, weights, bins = 25) {
+  v <- 
+    nhefs_censored %>% 
+    mutate(weights = weights) %>% 
+    count({{var}}, qsmk, wt = weights)
+  
+  if (is.factor(pull(nhefs_censored, {{var}}))) {
+    v %>% 
+      ggplot(aes({{var}}, n)) +
+      geom_col(aes(fill = qsmk), position = "dodge")
+  } else if (is.numeric(pull(nhefs_censored, {{var}}))) {
+    v %>% 
+      ggplot(aes({{var}})) +
+      geom_freqpoly(aes(color = qsmk, weight = n), bins = bins)
+  } else {
+    NULL
+  }
+}
+
+confounders <- 
+  vars(
+    sex, age, race, education, smokeintensity, smokeyrs, active, exercise, wt71
+  )
+
+confounders %>%
+  map(plot_treatment, weights = ip_w_a) %>% 
+  walk(print)
+```
+
+In the pseudo-population with nonstabilized IP weighting, the treatment populations are roughly equal.
+
+## 12.3 Stabilized IP weights {-}
+
+Stabilized IP weights for treatment.
+
+```{r}
+ip_sw_a <- 
+  case_when(
+    nhefs_censored$qsmk == "0" ~ 1 - mean(nhefs_censored$qsmk == "1"),
+    nhefs_censored$qsmk == "1" ~ mean(nhefs_censored$qsmk == "1"),
+    TRUE ~ NA_real_
+  ) * 
+  ip_w_a
+
+kable_summary(ip_sw_a)
+```
+
+Estimate ATE and its standard error using generalized estimating equation model.
+
+```{r}
+fit_geeglm <- 
+  geepack::geeglm(
+    wt82_71 ~ qsmk, data = nhefs_censored, weights = ip_sw_a, id = seqn
+  )
+
+broom::tidy(fit_geeglm)
+```
+
+Estimate of ATE with 95% confidence interval.
+
+```{r}
+v <- 
+  broom::tidy(fit_geeglm, conf.int = TRUE) %>% 
+  filter(term == "qsmk1") %>% 
+  select(estimate, conf_low = conf.low, conf_high = conf.high)
+
+kable(v, nsmall = 1)
+```
+
+```{r, echo=FALSE}
+v %>% 
+  save_result(
+    file = "data/ate.rds",
+    section = "12.3",
+    method = "IP weighting - Stabilized",
+    dataset = "Censored"
+  )
+```
+
+Plot treatment levels for each confounder.
+
+```{r}
+confounders %>%
+  map(plot_treatment, weights = ip_sw_a) %>% 
+  walk(print)
+```
+
+In the pseudo-population with stabilized IP weighting, the treatment populations are now unequal. These populations reflect the fact that approximately `r round_format(100 * mean(nhefs_censored$qsmk == "0"), nsmall = 1)`% of the participants did not quit smoking (`qsmk` = 0) and `r round_format(100 * mean(nhefs_censored$qsmk == "1"), nsmall = 1)`% of the participants did (`qsmk` = 1).
+
+### Fine Point 12.2 Checking positivity {-}
+
+Count number of individuals in all combinations of `sex`, `age`, and `qsmk`.
+
+```{r}
+v <- 
+  nhefs_censored %>% 
+  expand(sex, age = full_seq(age, period = 1), qsmk) %>% 
+  left_join(
+    nhefs_censored %>% 
+      mutate(n = 1),
+    by = c("sex", "age", "qsmk")
+  ) %>% 
+  count(sex, age, qsmk, wt = n)
+
+v
+```
+
+Number of combinations by number of individuals in combination.
+
+```{r}
+v %>% 
+  ggplot(aes(n)) +
+  geom_bar() +
+  labs(
+    title = "Number of combinations by number of individuals in combination",
+    x = "Number of individuals in combination",
+    y = "Number of combinations"
+  )
+```
+
+Eleven combinations have no individuals.
+
+```{r}
+v %>%
+  filter(n == 0) %>% 
+  kable(nsmall = 0)
+```
+
+## 12.4 Marginal structural models {-}
+
+In this section, we will estimate the causal effect of the change in smoking intensity (`smkintensity82_71`), a continuous variable, on the average weight gain (`wt82_71`).
+
+Distribution of `smokeintensity`.
+
+```{r}
+nhefs_censored %>% 
+  ggplot(aes(smokeintensity)) +
+  geom_histogram(binwidth = 5, boundary = 0) +
+  labs(title = "Distribution of smokeintensity")
+```
+
+Create subset of data with individuals who smoked 25 or fewer cigarettes per day at baseline.
+
+```{r}
+nhefs_censored_smoke_25 <- 
+  nhefs_censored %>% 
+  filter(smokeintensity <= 25)
+```
+
+Number of individuals in subset.
+
+```{r}
+nrow(nhefs_censored_smoke_25)
+```
+
+Numerator for IP weights.
+
+```{r}
+treatment <- nhefs_censored_smoke_25$smkintensity82_71
+
+ip_numerator <- 
+  dnorm(treatment, mean = mean(treatment), sd = sd(treatment))
+```
+
+The numerator for the IP weights approximates `smkintensity82_71` with a normal distribution. Here is the actual distribution of `smkintensity82_71` with its normal approximation.
+
+```{r}
+normal_approx <-
+  tibble(
+    x = seq(min(treatment), max(treatment), length.out = 201),
+    y = dnorm(x, mean = mean(treatment), sd = sd(treatment))
+  )
+
+nhefs_censored_smoke_25 %>% 
+  ggplot() +
+  geom_histogram(
+    aes(smkintensity82_71, stat(density)),
+    binwidth = 5,
+    boundary = 0
+  ) +
+  geom_line(aes(x, y), data = normal_approx, color = "red") +
+  labs(
+    title = "Distribution of smokeintensity82_71",
+    subtitle = "With normal approximation in red"
+  )
+```
+
+Denominator for IP weights.
+
+```{r}
+fit <- 
+  lm(
+    smkintensity82_71 ~ sex + poly(age, 2) + race + education + poly(wt71, 2) +
+      poly(smokeintensity, 2) + poly(smokeyrs, 2) + active + exercise,
+    data = nhefs_censored_smoke_25
+  )
+
+ip_denominator <- 
+  dnorm(treatment, mean = predict(fit, type = "response"), sd = sigma(fit))
+```
+
+IP weights for marginal structural model.
+
+```{r}
+ip_msm <- ip_numerator / ip_denominator
+
+kable_summary(ip_msm)
+```
+
+Fit marginal structural model.
+
+```{r}
+fit <- 
+  geepack::geeglm(
+    wt82_71 ~ smkintensity82_71 + I(smkintensity82_71^2),
+    data = nhefs_censored_smoke_25,
+    weights = ip_msm,
+    id = seqn
+  )
+
+broom::tidy(fit)
+```
+
+Coefficients of model.
+
+```{r}
+broom::tidy(fit) %>% 
+  select(term, estimate) %>% 
+  kable(nsmall = 3, align = "lr")
+```
+
+Mean weight gain with 95% confidence interval for constant smoking intensity.
+
+```{r}
+broom::tidy(fit, conf.int = TRUE) %>% 
+  filter(term == "(Intercept)") %>% 
+  select(estimate, conf_low = conf.low, conf_high = conf.high) %>% 
+  kable(nsmall = 1)
+```
+
+Mean weight gain with 95% confidence interval for increase in smoking intensity of 20 cigarettes per day.
+
+```{r}
+fit <- 
+  geepack::geeglm(
+    wt82_71 ~ I(smkintensity82_71 - 20) + I((smkintensity82_71 - 20)^2),
+    data = nhefs_censored_smoke_25,
+    weights = ip_msm,
+    id = seqn
+  )
+
+broom::tidy(fit, conf.int = TRUE) %>% 
+  filter(term == "(Intercept)") %>% 
+  select(estimate, conf_low = conf.low, conf_high = conf.high) %>% 
+  kable(nsmall = 1)
+```
+
+Marginal structural model for causal effect of quitting smoking (`qsmk`) on the risk of death by 1992 (`death`). For this calculation, we will convert the type of `qsmk` and `death` from factor to double.
+
+```{r, warning=FALSE}
+fit <- 
+  nhefs_censored %>% 
+  mutate(across(c(qsmk, death), ~ as.double(.) - 1)) %>%
+  geepack::geeglm(
+    death ~ qsmk, family = binomial(), data = ., weights = ip_sw_a, id = seqn
+  )
+
+broom::tidy(fit)
+```
+
+Estimate of causal odds ratio with 95% confidence interval.
+
+```{r}
+broom::tidy(fit, conf.int = TRUE, exponentiate = TRUE) %>% 
+  filter(term == "qsmk") %>% 
+  select(estimate, conf_low = conf.low, conf_high = conf.high) %>% 
+  kable(nsmall = 1)
+```
+
+## 12.5 Effect modification and marginal structural models {-}
+
+IP weights.
+
+```{r}
+fit <- glm(qsmk ~ sex, family = binomial(), data = nhefs_censored)
+
+ip_sw_a <- 
+  case_when(
+    nhefs_censored$qsmk == "0" ~ (1 - predict(fit, type = "response")),
+    nhefs_censored$qsmk == "1" ~ predict(fit, type = "response"),
+    TRUE ~ NA_real_
+  ) *
+  ip_w_a
+
+kable_summary(ip_sw_a)
+```
+
+Fit marginal structural model.
+
+```{r}
+fit <- 
+  geepack::geeglm(
+    wt82_71 ~ qsmk * sex, data = nhefs_censored, weights = ip_sw_a, id = seqn
+  )
+
+broom::tidy(fit)
+```
+
+Estimate of effect modification by sex.
+
+```{r}
+broom::tidy(fit, conf.int = TRUE) %>% 
+  filter(term == "qsmk1:sex1") %>% 
+  select(estimate, conf_low = conf.low, conf_high = conf.high) %>% 
+  kable(nsmall = 1)
+```
+
+## 12.6 Censoring and missing data {-}
+
+Number of individuals in full dataset.
+
+```{r}
+nrow(nhefs)
+```
+
+Number of individuals whose weight in 1982 is missing.
+
+```{r}
+sum(is.na(nhefs$wt82))
+```
+
+Add `censored` variable to `nhefs` to indicate whether or not weight in 1982 (`wt82`) is missing.
+
+```{r}
+nhefs <- 
+  nhefs %>% 
+  mutate(censored = if_else(!is.na(wt82), 0, 1) %>% as.factor())
+```
+
+The treatment `qsmk` is associated with censoring.
+
+```{r}
+v <- 
+  nhefs %>% 
+  group_by(qsmk) %>% 
+  summarize(censored = mean(censored == "1"))
+
+kable(v, nsmall = 3)
+```
+
+`r round_format(100 * (v %>% filter(qsmk == "0") %>% pull(censored)), nsmall = 1)`% of non-quitters were censored versus `r round_format(100 * (v %>% filter(qsmk == "1") %>% pull(censored)), nsmall = 1)`% of quitters.
+
+The predictor `wt71` is also associated with censoring.
+
+```{r}
+v <- 
+  nhefs %>% 
+  group_by(censored) %>% 
+  summarize(across(wt71, mean))
+
+kable(v, nsmall = 1)
+```
+
+The average baseline weight was `r round_format(v %>% filter(censored == "0") %>% pull(wt71), nsmall = 1)` kg in the uncensored versus `r round_format(v %>% filter(censored == "1") %>% pull(wt71), nsmall = 1)` kg in the censored.
+
+Stabilized IP weights for treatment.
+
+```{r}
+ip_numerator <- 
+  case_when(
+    nhefs$qsmk == "0" ~ 1 - mean(nhefs$qsmk == "1"),
+    nhefs$qsmk == "1" ~ mean(nhefs$qsmk == "1"),
+    TRUE ~ NA_real_
+  )
+
+fit_denominator <- 
+  glm(
+    qsmk ~ sex + poly(age, 2) + race + education + poly(wt71, 2) +
+      poly(smokeintensity, 2) + poly(smokeyrs, 2) + active + exercise,
+    family = binomial(),
+    data = nhefs
+  )
+
+ip_denominator <- 
+  case_when(
+    nhefs$qsmk == "0" ~ 1 - predict(fit_denominator, type = "response"),
+    nhefs$qsmk == "1" ~ predict(fit_denominator, type = "response"),
+    TRUE ~ NA_real_
+  )
+
+ip_sw_a <- ip_numerator / ip_denominator 
+```
+
+Stabilized IP weights for censoring.
+
+```{r}
+fit_numerator <- glm(censored ~ qsmk, family = binomial(), data = nhefs)
+
+ip_numerator <- 
+  case_when(
+    nhefs$censored == "0" ~ 1 - predict(fit_numerator, type = "response"),
+    nhefs$censored == "1" ~ predict(fit_numerator, type = "response"),
+    TRUE ~ NA_real_
+  )
+
+fit_denominator <- 
+  glm(
+    censored ~ qsmk + sex + poly(age, 2) + race + education + poly(wt71, 2) +
+      poly(smokeintensity, 2) + poly(smokeyrs, 2) + active + exercise,
+    family = binomial(),
+    data = nhefs
+  )
+
+ip_denominator <- 
+  case_when(
+    nhefs$censored == "0" ~ 1 - predict(fit_denominator, type = "response"),
+    nhefs$censored == "1" ~ predict(fit_denominator, type = "response"),
+    TRUE ~ NA_real_
+  )
+
+ip_sw_c <- ip_numerator / ip_denominator
+```
+
+Stabilized IP weights for treatment and censoring
+
+```{r}
+ip_sw_ac = ip_sw_a * ip_sw_c
+
+kable_summary(ip_sw_ac[nhefs$censored == "0"])
+```
+
+Estimate ATE and its standard error using generalized estimating equation model.
+
+```{r}
+fit_geeglm <- 
+  geepack::geeglm(
+    wt82_71 ~ qsmk,
+    data = nhefs_censored,
+    weights = ip_sw_ac[nhefs$censored == "0"],
+    id = seqn
+  )
+
+broom::tidy(fit_geeglm)
+```
+
+Estimate of ATE with 95% confidence interval.
+
+```{r}
+v <- 
+  broom::tidy(fit_geeglm, conf.int = TRUE) %>% 
+  filter(term == "qsmk1") %>% 
+  select(estimate, conf_low = conf.low, conf_high = conf.high)
+
+kable(v, nsmall = 1)
+```
+
+```{r, echo=FALSE}
+v %>% 
+  save_result(
+    file = "data/ate.rds",
+    section = "12.6",
+    method = "IP weighting - Stabilized",
+    dataset = "Full"
+  )
+```
+
