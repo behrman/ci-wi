@@ -35,6 +35,7 @@ vignettes/*.pdf
 *.knit.md
 
 # bookdown files
+_book
 _bookdown_files
 _main.*
 
